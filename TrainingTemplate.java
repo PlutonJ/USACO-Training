@@ -9,7 +9,6 @@ import java.util.*;
 
 class TrainingTemplate {
 	static String name = "";
-	
 	static PrintWriter out;
 	
 	public static void main(String[] args) throws IOException {
