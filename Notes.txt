@@ -1,0 +1,58 @@
+dp: 
+	exponential -> polynomial
+	dfs -> dp
+	4 elements:
+		state: what does dp[i][j] mean
+		function: formula for dp[i][j]
+		initialization
+		answer: where
+
+path finding: 
+	djikstra's: 
+		O(V ** 2)
+		O(E log V) if use heap to determine next vertex to visit, 
+			but only appreciably faster on large, sparse graphs
+		does not work with negative weight edges
+		pseudocode:
+			for all nodes i:
+				dist[i] = infinity
+				visited[i] = false	// not reachable
+				parent[i] = null	// no path to vertex yet
+			
+			dist[source] = 0
+			while nodesVisited < graphSize:
+				i = unvisited vertex closest to source
+				// to find such node i, keep all dist to source in an array(or node)
+				assert distance[i] != infinity, "graph not connected"
+				visited[i] = true
+				
+				for all neighbors j of i:
+					if dist[i] + weight[i][j] < dist[j]:
+						dist[j] = dist[i] + weight[i][j]
+						parent[j] = i
+	
+	floyd-warshall: 
+		O(V ** 3)
+		finds length of shortest paths between all pairs of vertices
+		works with negative weight edges(no negative cycles)
+		requires adjacency matrix
+		dist[i][j] = weight[i][j] or infinity if no edge connects i and j
+		Ɐ pair (u, v), if ∃ w ∋ dist(u -> w -> v) < dist[u][v] then update dist[u][v]
+		miraculously requires only 1 iteration if ordered properly
+		pseudocode: 
+			// dist[i][j] = best known dist(i -> j) so far
+			for i = (1 -> n):
+				for j = (1 -> n):
+					dist[i][j] = weight[i][j]
+			
+			for k = (1 -> n): 
+				for i = (1 -> n): 
+					for j = (1 -> n): 
+						if dist[i][k] + dist[k][j] < dist[i][j]: 
+							dist[i][j] = dist[i][k] + dist[k][j];
+		
+	bfs:
+		O(b ** (d + 1)) time & mem (b = avg out-deg, d = depth)
+		uses queue
+		for unweighted graphs
+		if V large E small, much faster than djikstra's
