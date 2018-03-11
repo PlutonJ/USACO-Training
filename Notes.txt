@@ -1,4 +1,4 @@
-dp: 
+﻿dp: 
 	exponential -> polynomial
 	dfs -> dp
 	4 elements:
@@ -8,7 +8,7 @@ dp:
 		answer: where
 
 path finding: 
-	djikstra's: 
+	dijkstra's: 
 		O(V ** 2)
 		O(E log V) if use heap to determine next vertex to visit, 
 			but only appreciably faster on large, sparse graphs
