@@ -4,9 +4,7 @@ LANG: JAVA
 TASK: contact
 */
 
-// Times out on test 5.
-// Absolute stupidness for using kmp algorithm
-// Just count the number of times the same string is passed into the constructor of Pattern.
+// first store in hashset, then order them in treeset
 
 import java.io.*;
 import java.util.*;
@@ -30,14 +28,17 @@ class contact {
 		}
 		String seq = buf.toString();
 		int length = seq.length();
+		Set<Pattern> pse = new HashSet<>();
 		// sort by frequency descending then length ascending then binary value ascending
-		TreeSet<Pattern> ps = new TreeSet<>((a, b) -> Pattern.freqs.get(a.p) == Pattern.freqs.get(b.p) ? a.p.length() == b.p.length() ? Integer.parseInt(a.p, 2) - Integer.parseInt(b.p, 2) : a.p.length() - b.p.length() : Pattern.freqs.get(b.p) - Pattern.freqs.get(a.p));
+		TreeSet<Pattern> ps = new TreeSet<>((a, b) -> Pattern.freqs.get(a.p).intValue() == Pattern.freqs.get(b.p).intValue() ? a.p.length() == b.p.length() ? Integer.parseInt(a.p, 2) - Integer.parseInt(b.p, 2) : a.p.length() - b.p.length() : Pattern.freqs.get(b.p) - Pattern.freqs.get(a.p));
 		for(int len = A; len <= B; len++) {
 			for(int i = 0; i <= length - len; i++) {
 				Pattern p = new Pattern(seq.substring(i, i + len));
-				ps.remove(p);	// shit happens here
-				ps.add(p);
+				pse.add(p);
 			}
+		}
+		for(Pattern p : pse) {
+			ps.add(p);
 		}
 		
 		while(ps.size() > 0 && N --> 0) {
@@ -46,13 +47,14 @@ class contact {
 			f: while(Pattern.freqs.get(ps.first().p) == freq) {
 				for(int i = 0; i < 5; i++) {
 					out.print(ps.pollFirst().p);
-					if(ps.size() == 0 || Pattern.freqs.get(ps.first().p) != freq) {
+					//System.out.println(ps.size() != 0 ? ps.first().p + " " + Pattern.freqs.get(ps.first().p) : "null");
+					if(ps.size() == 0 || Pattern.freqs.get(ps.first().p).intValue() != freq) {
 						out.println("");
 						break f;
 					}
 					out.print(" ");
 				}
-				if(ps.size() > 0 && Pattern.freqs.get(ps.first().p) == freq) {
+				if(ps.size() > 0 && Pattern.freqs.get(ps.first().p).intValue() == freq) {
 					out.println(ps.pollFirst().p);
 				} else {
 					out.println("");
