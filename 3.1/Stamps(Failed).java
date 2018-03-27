@@ -4,7 +4,7 @@ LANG: JAVA
 TASK: stamps
 */
 
-// Times out at test case 10
+// Times out on test case 10
 
 import java.io.*;
 import java.util.*;

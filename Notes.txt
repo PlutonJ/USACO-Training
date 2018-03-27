@@ -141,3 +141,34 @@ pattern searching:
 						j = lps[j - 1]
 					else: 
 						i++
+
+knapsack: 
+	given a collection of objects with size and value and the total space available, 
+		find the set of objects that maximizes the sum of the value of the set with 
+		size constrainted by the limit, the total number or size of any particular item
+		used in the set cannot exceed its availability
+	fractional knapsack: 
+		allowed to place fractional objects in the knapsack
+		O(N log N) since must first sort by value to size ratio(O(N ** 2) without sorting)
+		rare to have both size and availability
+			(do trivial transmation to have all objects of size 1, have availability = original size * availability, 
+			and divide the value by original size)
+		use greedy algorithm: 
+			find the object with highest value to size ratio
+			if total capacity remaining >= availability of object, put all in knapsack and iterate
+			if total capacity remaining < availability of object, use as much as possible and terminate
+	integer knapsack: 
+		solvable using dp if knapsack small enough: 
+			O(KN), K = size of knapsack, N = sum of availability of objects
+			dp[i] = max value that a knapsack of size i can have
+			update dp for an object of isze S by traversing in reverse order and seeing if 
+				placing the objext into the knapsack of size K yields a better set than the 
+				current best knapsack of size K + S
+		if knapsack too large to allocate array, use recursive descent since NP-complete
+		if all sizes are same, solve greedily, picking the objects in decreasing value order until knapsack full
+		if values are all 1, solve greedily, picking the objects in increasing size order until knapsack full
+	multiple knapsack: 
+		more than 1 knapsack is to be filled(multiple integer knapsacks)
+		state space is too large for dp, use recursive descent
+		if values are all 1 && max # of objects that can be placed in all knapsacks is n, 
+			then there is a solution which uses n smallest objects
