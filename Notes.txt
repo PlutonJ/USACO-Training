@@ -44,12 +44,27 @@ path finding:
 			for i = (1 -> n):
 				for j = (1 -> n):
 					dist[i][j] = weight[i][j]
+					// inf if not connected
 			
 			for k = (1 -> n): 
 				for i = (1 -> n): 
 					for j = (1 -> n): 
 						if dist[i][k] + dist[k][j] < dist[i][j]: 
 							dist[i][j] = dist[i][k] + dist[k][j];
+		optimizations: 
+			due to the symmetric nature of adjacency matrices, only iterate through half of the matrix
+			check if dist[i][k] is inf before proceeding to the j loop
+			pseudocode: 
+				for i = (1 -> n):
+					for j = (1 -> n):
+						dist[i][j] = weight[i][j](inf if not connected)
+				
+				for k = (1 -> n): 
+					for i = (1 -> n - 1): 
+						if dist[i][k] < inf: 
+							for j = (i + 1 -> n): 
+								if dist[i][k] + dist[k][j] < dist[i][j]: 
+									dist[i][j] = dist[i][k] + dist[k][j];
 		
 	bfs:
 		O(b ** (d + 1)) time & mem (b = avg out-deg, d = depth)
