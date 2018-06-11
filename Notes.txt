@@ -187,3 +187,32 @@ knapsack:
 		state space is too large for dp, use recursive descent
 		if values are all 1 && max # of objects that can be placed in all knapsacks is n, 
 			then there is a solution which uses n smallest objects
+			
+eulerian tour: 
+	O(m + n) (m = # of edges, n = # of nodes) if graph in adjacency matrix form
+	given an undirected graph, find a path which uses every edge once
+	eulerian circuit: starts and ends on the same vertex
+	a graph has an eulerian path: 
+		iff connected
+		iff every node except 2 has even degree(of the two odd degree nodes, one is start and the other is end)
+	a graph has an eulerian circuit:
+		iff connected
+		iff every node has even degree
+	pseudocode: 
+		circuitPos = 0
+		findCircuit(node 1)
+		
+		findCircuit(node i): 
+			if i has no neighbors: 
+				circuit[circuitPos++] = i
+			else: 
+				while i has neighbors: 
+					pick random neighbor j of i
+					// for multiple edges between the same nodes, subtract 1 from the adjacency matrix
+					deleteEdges(i, j)
+					findCircuit(j)
+				circuit[circuitPos++] = i
+	to find eulerian tour, findCircuit(one of the odd degree nodes)
+	may overflow runtime stack with larger graphs thus use own stack
+	works for multple edges between the same nodes and self-loops(1 indegree + 1 outdegree)
+	a directed graph has a eulerian circuit if strongly connected and indegree == outdegree for each node, except traverse the arcs in reverse order
