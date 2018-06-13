@@ -157,10 +157,22 @@ pattern searching:
 					else: 
 						i++
 
+binary trees: 
+    e.g. C -> {B -> {A, D -> {E, F}}, G -> H}
+    in-order traversal: 
+        left sub-tree, root, right sub-tree
+        e.g. ABEDFCHG
+    pre-order traversal: 
+        root, left sub-tree, right sub-tree
+        e.g. CBADEFGH
+    post-order traversal: 
+        left sub-tree, right sub-tree, root
+        e.g. AEFDBHGC              
+
 knapsack: 
 	given a collection of objects with size and value and the total space available, 
 		find the set of objects that maximizes the sum of the value of the set with 
-		size constrainted by the limit, the total number or size of any particular item
+		size constrainted by the limit, the total # or size of any particular item
 		used in the set cannot exceed its availability
 	fractional knapsack: 
 		allowed to place fractional objects in the knapsack
@@ -216,3 +228,55 @@ eulerian tour:
 	may overflow runtime stack with larger graphs thus use own stack
 	works for multple edges between the same nodes and self-loops(1 indegree + 1 outdegree)
 	a directed graph has a eulerian circuit if strongly connected and indegree == outdegree for each node, except traverse the arcs in reverse order
+
+computational geometry: 
+	dot product = |u||v|cos(theta)
+	|cross product| = |u||v|sin(theta)
+	area of polygon = (1 / 2)|x1 x2 ... xn|
+	                         |y1 y2 ... yn| where the determinant = x1y2 + x2y2 + ... + xny1 - y1x2 - y2x3 - ... - ynx1
+    dist from point to line d(P, AB) = |(P - A) x (B - A)| / |B - A|( = |AB||AP|sin(theta) / |AB| = |AP|sin(theta))
+    check if points C and D are on the same side of line AB(for 2 dimensions): 
+        |(B - A) x (C - A)| * |(B - A) x (D - A)| > 0 => (cross products have same signs)
+        note that the magnitude of the cross products are their z values in this case
+    check if a point A is in a triangle: 
+        find point B which is in the triangle(e.g. average of the 3 vertices)
+        check if A is on the same side as B for all 3 edges
+        same works for convex polygons
+    check if a collection of points are coplanar: 
+        select points A, B, and C
+        the points are coplanar if for any other point D, the triple product of (B - A), (C - A), and (D - A) is 0
+        (((B - A) x (C - A)) · (D - A) == 0)
+    check if 2 line segments are parallel: 
+        create vectors and see if the cross product == 0
+    check if 2 lines intersect: 
+        in 2 dimensions, two lines intersect if they are not parallel
+        in 3 dimensions, two lines AB and CD intersect if they are not parallel and A, B, C, and D are coplanar
+    check if 2 line segments intersect: 
+        in 2 dimensions, two line segments AB and CD intersect iff A and B are on opposite sides of line CD, while C and D are on opposite sides of line AB
+        in 3 dimensions, solve for i and j in: 
+            Ax + (Bx - Ax)i = Cx + (Dx - Cx)j
+            Ay + (By - Ay)i = Cy + (Dy - Cy)j
+            Az + (Bz - Az)i = Cz + (Dz - Cz)j
+            if 0 <= i, j <= 1, then the intersection is at (Ax + (Bx - Ax)i, Ay + (By - Ay)i, Az + (Bz - Az)i)
+    find intersection of 2 lines: 
+        solve the above set of equations(discard the z equation for 2 dimensions)
+    check if a polygon is convex: 
+        traverse the vertices in clock-wise order, for each triplet of consecutive points A, B, and C, 
+        calculate (B - A) x (C - A)
+        if the z component of each of the cross producs is positive, the polygon is convex
+    check if a point is within a nonconvex polygon: 
+        make a ray from the point in a random direction and count the # of times it intersects the polygon
+        if the ray intersects the polygon at a vertex or along an edge, pick a new direction
+        the point is within the polygon iff the ray intersects the polygon an odd # of times
+        this method extends to 3 dimsneions, but the ray can only intersect at faces
+    geometric methodologies: 
+        monte carlo: 
+            random sampling for probability
+            e.g. area of a figure: 
+                decide a bounding box and estimate the probability of hitting the figure at a random point
+        partitioning: 
+            method to improve speed of a geometric algorithm
+            divide the plane up into sections(usually by a grid, but sometimes into radial sections and etc.)
+            bucket objects into appropriate sections
+            e.g. searching for objects within some figure: 
+                only sections which have a nonzero intersection with the figure need to be examined
