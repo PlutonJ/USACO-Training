@@ -1,4 +1,4 @@
-dp: 
+﻿dp: 
 	exponential -> polynomial
 	dfs -> dp
 	4 elements:
@@ -75,7 +75,7 @@ path finding:
 						if dist[i][k] + dist[k][j] < dist[i][j]: 
 							dist[i][j] = dist[i][k] + dist[k][j];
 		optimizations: 
-			due to the symmetric nature of adjacency matrices, only iterate through half of the matrix
+			due to the symmetric nature of adjacency matrices of undirected graphs, only iterate through half of the matrix
 			check if dist[i][k] is inf before proceeding to the j loop
 			pseudocode: 
 				for i = (1 -> n):
@@ -316,7 +316,7 @@ network flow:
         given the current graph, find path from source to sink arcs that all have non-zero weight
         let pathCap = maximum flow across the path(== min(c(u, v) Ɐ (u, v) along the path))
         reduce the weight of each arc along the path by pathCap and add pathCap to the weight of the reverse arc of each arc along the path
-        pseudocode(Ford-Fulkerson algorithm, O(FM) where F = maximum flow, M = # of arcs): 
+        pseudocode(algorithm from USACO Training, O(FM) where F = maximum flow, M = # of arcs): 
             // the algorithm is essentially constructing the residual network(leftover capacity for both directions between vertices) and searching for augmenting paths
             // the termination of the algorithm is guaranteed for integer weights since the flow is increased every iteration
             if src == sink: 
@@ -366,12 +366,14 @@ network flow:
                     capacity(nextNode, curNode) -= pathCapacity
                     capacity(curNode, nextNode) += pathCapacity
                     curNode = nextNode
-        undirected graphis: 
+        undirected graphs: 
             expand the edge as 2 arcs in opposite directions
         limit amount of traffic through any node: 
             split node into 2, an in-node and an out-node
             put in-arcs into in-node and out-arcs into out-node
             place arc from in-node to out-node with capacity of the node
+        multiple arcs that are between the same nodes: 
+            add up the weights of the arcs in 1 arc and discard all others
         multiple sources and sinks: 
             create virtual source and virtual sink
             place arcs from virtual source to each source
@@ -385,7 +387,7 @@ network flow:
                 subject to the constraint that only certain pairs are possible
                 create source and add arc with capacity 1 from source to each A object
                 create sink with arc from each B object to it with capacity 1
-                if object Ai and Bj are allowed to be matched together, add arc from Ai to Bk with capacity 1
+                if object Ai and Bj are allowed to be matched together, add arc from Ai to Bj with capacity 1
                 run algorithm and determine arcs used between A objects and B objects
             minimum cut: 
                 given a weighted undirected graph, find the set of edges with minimum total weight such that it separates two given nodes
