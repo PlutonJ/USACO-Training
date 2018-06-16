@@ -1,4 +1,4 @@
-﻿dp: 
+dp: 
 	exponential -> polynomial
 	dfs -> dp
 	4 elements:
@@ -405,3 +405,149 @@ network flow:
                             the arcs from S to T must be full, otherwise the flow can be augmented
                         max-flow == min-cut because any 1 flow <= any 1 cut: 
                             any F <= Fmax <= Cmin <= any C
+
+big nums: 
+    structure: 
+        list of numbers + sign
+        upper bound known: array
+        upper bound unknown: linked list(deque)
+        store the number in base b, let a0, a1, ..., an be the digits stored
+        value = ((-1) ** sign) * (a0 + a1(b ** 1) + a2(b ** 2) + ... + an(b ** n))
+        note that a0, a1, ..., an have to be within [0, b - 1]
+        b is generally selected to be a power of 10 for easy display of the number
+    operations: 
+        make sure that every addition and multiplication will not result in an overflow
+        comparison: 
+            pseudocode: 
+                // sgn(A) == 0 => positive
+                // sgn(A) == 1 => negative
+                // A.size = number of digits of A
+                if sgn(A) < sgn(B): 
+                    return "A < B"
+                else if sgn(A) > sgn(B): 
+                    return "A > B"
+                else: 
+                    for i = (max(A.size, B.size) -> 0): 
+                        if a[i] > b[i]: 
+                            if sgn(A) == 0: 
+                                return "A > B"
+                            else: 
+                                return "A < B"
+                        else if a[i] < b[i]: 
+                            if sgn(A) == 0: 
+                                return "A < B"
+                            else: 
+                                return "A > B"
+                    return "A == B"
+        addition: 
+            if numbers have opposite signs, calculate which is larger in absolute value, subtract the smaller from the larger, and set the sign to be the same as the larger number
+            otherwise, add numbers from 0 to max(A.size, B.size) while maintaining a carry bit
+            pseudocode: 
+                absoluteSubtract(A, B, C): 
+                    borrow = 0
+                    for pos = (0 -> max(A.size, B.size)): 
+                        C[pos] = A[pos] - B[pos] - borrow
+                        if C[pos] < 0: 
+                            C[pos] = C[pos] + base
+                            borrow = 1
+                        else: 
+                            borrow = 0
+                        // it has to be done this way to handle the case of subtracting two very close numbers
+                        // e.g. 7658493 - 7658492
+                        if C[pos] != 0: 
+                            C.size = pos
+                        assert borrow == 0, "|B| > |A|"
+                
+                absoluteAdd(A, B, C): 
+                    carry = 0
+                    for pos = (0 -> max(A.size, B.size)): 
+                        C[pos] = A[pos] + B[pos] + carry
+                        carry = C[pos] / base
+                        C[pos] %= base
+                    if carry != 0: 
+                        // check for overflow
+                        C[max(A.size, B.size) + 1] = carry
+                        C.size = max(A.size, B.size) + 1
+                    else: 
+                        C.size = max(A.size, B.size)
+                
+                add(A, B, C): 
+                    if sgn(A) == sgn(B): 
+                        absoluteAdd(A, B, C)
+                        sgn(C) = sgn(A)
+                    else: 
+                        if A > B: 
+                            absoluteSubtract(A, B, C)
+                            sgn(C) = sgn(A)
+                        else: 
+                            absoluteSubtract(A, B, C)
+                            sgn(C) = sgn(B)
+        subtraction: 
+            A - B = A + (-B)
+        multiplication by scalar: 
+            pseudocode: 
+                if s < 0: 
+                    sgn(B) = 1 - sgn(A)
+                    s = -s
+                else: 
+                    sgn(B) = sgn(A)
+                carry = 0
+                for pos = (0 -> A.size): 
+                    B[pos] = A[pos] * s + carry
+                    carry = B[pos] / base
+                    B[pos] %= base
+                pos = A.size + 1
+                while carry != 0: 
+                    // check for overflow
+                    B[pos] = carry % base
+                    carry /= base
+                    pos++
+                B.size = pos - 1
+        multiplication of 2 bignums: 
+            multiply one of the numbers by each digit of the other, and add it with appropriate offset to a running total
+            pseudocode: 
+                multiplyAndAdd(A, s, offset, C): 
+                    carry = 0
+                    for pos = (0 -> A.size): 
+                        C[pos + offset] += A[pos] * s + carry
+                        carry = C[pos + offset] / base
+                        C[pos + offset] %= base
+                    pos = A.size + offset + 1
+                    while carry != 0: 
+                        // check for overflow
+                        C[pos] += carry
+                        carry = C[pos] / base
+                        C[pos] %= base
+                        pos++
+                    if C.size < pos - 1: 
+                        C.size = pos - 1
+                
+                multiply(A, B, C): 
+                    for pos = (0 -> B.size): 
+                        multiplyAndAdd(A, B[pos], pos, C)
+                    sgn(C) = (sgn(A) + sgn(B)) % 2
+                division by scalar: 
+                    pseudocode: 
+                        divideByScalar(A, s, C): 
+                            rem = 0
+                            C.size = 0
+                            for pos = (A.size -> 0): 
+                                rem = rem * b + A[pos]
+                                C[pos] = rem / s
+                                if C[pos] > 0 && pos > C.size: 
+                                    C.size = pos
+                                rem %= s
+                        // rem is remainder of the division
+                division by bignum: 
+                    pseudocode: 
+                        divide(A, B, C): 
+                            bignum rem = 0
+                            for pos = (A.size -> 0): 
+                                multiplyByScalarInPlace(rem, B)
+                                addScalarInPlace(rem, A[pos])
+                                C[pos] = 0
+                                while rem > B: 
+                                    C[pos]++
+                                    subtractInPlace(rem, B)
+                                if C[pos] > 0 && pos > C.size: 
+                                    C.size = pos
