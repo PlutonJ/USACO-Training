@@ -1,4 +1,4 @@
-dp: 
+﻿dp: 
 	exponential -> polynomial
 	dfs -> dp
 	4 elements:
@@ -394,7 +394,8 @@ network flow:
                 minimum total weight is the flow between the two nodes
                 to determine the path, try removing each edge in increasing weight order, and seeing if it reduces the network flow
                 if removing the edge does reduce the network flow, it should reduce the flow by the capacity of the edge
-                the first edge that reduces the flow is a memter of the minimum cut, iterate on the graph without that edge
+                the first edge that reduces the flow is a member of the minimum cut, iterate on the graph without that edge
+		the minimum cut is also the set of arcs that are in the original network but go from a node reachable from the source to one that is unreachable in the residual network
                 max-flow min-cut theorem: 
                     in a flow network, the maximum amount of flow passing from the source to the sink is equal to the total weight of the edges in the minimum cut
                     proof: 
@@ -551,3 +552,57 @@ big nums:
                                     subtractInPlace(rem, B)
                                 if C[pos] > 0 && pos > C.size: 
                                     C.size = pos
+
+2d convex hull: 
+    given a collection of points in the plane, find the convex polygon with smallest area such that each point is contained within(or on the boundary of) the polygon
+    USACO "gift wrapping" algorithm: 
+        find a point whil will be within the convex hull, set it as the origin
+        calculate the angle that each point makes with the x-axis
+        sort the points based on this angle
+        add the first two points
+        for every other point except the last point: 
+            check if the angle it forms with the previous two points > 180 deg
+            if angle > 180 deg remove the previous point
+        to add the last point: 
+            perform the deletion above
+            if the angle the last point forms with the previous point and the first point > 180 deg remove the last point and continue checking the next-to-last point
+            if the angle formed with the last point and the first two points > 180 deg remove the first point and continue checking
+        adding points and calculating angles are linear time, thus the runtime is dominated by the sort, thus the algorithm runs in O(n log n), which is provably optimal
+        pseudocode: 
+            // x[i], y[i] is the x, y position of the i-th point
+            // zCrossProd(v1, v2) = z component of v1 x v2
+            // if zCrossProd(v1, v2) < 0 then v2 is clockwise of v1
+            // since adding points counter-clockwise, zCrossProd(v1, v2) < 0 => theta > 180 deg
+            (midX, midY) = (0, 0)
+            for all points i: 
+                (midX, midY) += (x[i] / n, y[i] / n)
+            for all points i: 
+                angle[i] = atan2(y[i] - midY, x[i] - midX)
+                perm[i] = i
+            
+            // sort perm based on angle values
+            hull[0] = perm[0]
+            hull[1] = perm[1]
+            hullPos = 2
+            for all points p in perm order except perm[n - 1]: 
+                while hullPos > 1 && zCrossProd(hull[hullPos - 2] - hull[hullPos - 1], hull[hullPos - 1] - p) < 0: 
+                    hullPos--;
+                hull[hullPos++] = p
+            
+            // add last point
+            p = perm[n - 1]
+            while hullPos > 1 && zCrossProd(hull[hullPos - 2] - hull[hullPos - 1], hull[hullPos - 1] - p) < 0: 
+                hullPos--;
+            
+            hullStart = 0
+            do: 
+                flag = false
+                if hullPos - hullStart >= 2 && zCrossProd(p - hull[hullPos - 1], hull[hullStart] - p) < 0: 
+                    p = hull[--hullPos]
+                    flag = true
+                if hullPos - hullStart >= 2 && zCrossProd(hull[hullStart] - p, hull[hullStart + 1] - hull[hullStart]) < 0: 
+                    hullStart++
+                    flag = true
+            while flag
+            hull[hullPos++] = p
+        this algorithm does not work with any limitations on the polygon created(e.g. no more than n points / must be a rectangle)
