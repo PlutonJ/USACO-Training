@@ -1,4 +1,4 @@
-﻿dp: 
+dp: 
 	exponential -> polynomial
 	dfs -> dp
 	4 elements:
@@ -606,3 +606,24 @@ big nums:
             while flag
             hull[hullPos++] = p
         this algorithm does not work with any limitations on the polygon created(e.g. no more than n points / must be a rectangle)
+
+heuristic search: 
+    estimate the "goodness" of all states to improve the search for a solution
+    a heuristic function is evaluated in terms of how well it estimates the cost of a state
+    admissibility: 
+        a heuristic function is called admissible if it underestimates the cost of a state and is nonnegative for all states
+    heuristic pruning: 
+        easiest and most common use for heuristic functions
+        assume problem is to find solution with min cost: 
+            with addmissible heuristic function, if cost of current solution thus far == A, and heurisic function returns B, then best possible solution which is a child of the current solution is A + B
+            if a solution has been found with cost C where C < A + B, stop continuing to search for a solution from this state
+        especially helpful with dfs+id
+    best-first search: 
+        ~greedy dfs
+        instead of expanding the children in an arbitrary order, expand them in order of their heuristic evaluation
+    a*: 
+        akin to the greedy bfs
+        bfs expands the node with min cost, while a* expands the node that the cost of reaching that state + the heuristic value of the state is minimum
+        states are kept in a priority queue, with their priority the sum of their cost + the heuristic evaluation
+        at each step, remove the lowest priority item and place all of its children into the queue with the appropriate priority
+        with an admissible heuristic function, the first end state that a* finds is guaranteed to be optimal
