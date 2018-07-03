@@ -1,0 +1,4 @@
+patterns: common prefix(large datasets will most likely be patterned)
+stack: +1 for start, -1 for end
+network flow
+geometric problem with reasonable constraints -> big array

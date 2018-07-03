@@ -1,4 +1,4 @@
-dp: 
+﻿dp: 
 	exponential -> polynomial
 	dfs -> dp
 	4 elements:
@@ -134,9 +134,9 @@ mst:
 						src[j] = i
 
 pattern searching: 
-	kmp algorithm: 
+	knuth morris pratt(kmp) algorithm: 
 		preprocess pattern to construct auxiliary lps[] of same size as pattern
-		lps[i] = longest proper prefix of pattern[0 : i] which is also a suffix of pattern[0 : i]
+		lps[i] = longest proper prefix(!= the string itself) of pattern[0 : i] which is also a suffix of pattern[0 : i]
 		e.g. "AAAA" -> [0, 1, 2, 3]; "AABAACAABAA" -> [0, 1, 0, 1, 2, 0, 1, 2, 3, 4, 5]
 		using lps to decide next positions: 
 			start comparison with pattern[j] with j = 0 at current window of text
@@ -256,11 +256,11 @@ computational geometry:
 	dot product = |u||v|cos(theta)
 	|cross product| = |u||v|sin(theta)
 	area of polygon = (1 / 2)|x1 x2 ... xn|
-	                         |y1 y2 ... yn| where the determinant = x1y2 + x2y2 + ... + xny1 - y1x2 - y2x3 - ... - ynx1
+	                         |y1 y2 ... yn| where the determinant = x1y2 + x2y3 + ... + xny1 - y1x2 - y2x3 - ... - ynx1
     dist from point to line d(P, AB) = |(P - A) x (B - A)| / |B - A|( = |AB||AP|sin(theta) / |AB| = |AP|sin(theta))
     check if points C and D are on the same side of line AB(for 2 dimensions): 
-        |(B - A) x (C - A)| * |(B - A) x (D - A)| > 0 => (cross products have same signs)
-        note that the magnitude of the cross products are their z values in this case
+        |(B - A) x (C - A)| * |(B - A) x (D - A)| > 0 => cross products have same signs
+        note that the magnitude of the cross products are their z values in this case(|A x B| = AxBy - BxAy)
     check if a point A is in a triangle: 
         find point B which is in the triangle(e.g. average of the 3 vertices)
         check if A is on the same side as B for all 3 edges
