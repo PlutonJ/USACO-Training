@@ -2,3 +2,8 @@ patterns: common prefix(large datasets will most likely be patterned)
 stack: +1 for start, -1 for end
 network flow
 geometric problem with reasonable constraints -> big array
+find nth lexicographically sorted string: find way to index strings and enumerate prefixes
+    (if index of prefix + # of possible strings with this prefix >= n then the target string starts with this prefix)
+try dp: does the answer to n - 1 help in any way to acquire the answer to n
+use array with pointer instead of stack to save time
+xor's and sums: try a prefix array
