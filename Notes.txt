@@ -180,6 +180,50 @@ pattern searching:
 					else: 
 						i++
 
+longest palindromic substring: 
+    manacher's algorithm: 
+        O(N)
+        insert separators(any character not present in the string) at the start and the end of the string and between characters
+        insert two additional distinct characters at each end of the string to avoid boundary checking
+        let P[i] = radius of longest palindrome centered at i(i.e. the length of the palindrome is 2 * P[i] + 1, and the length of the palindrome in the original string is P[i])
+        let C = center of palindrome which extends the furthest to the right, R = the right edge of the palindrome centered at C
+        by the symmetric nature of palindromes, let i' = 2 * C - i(i mirrored across C), if P[i'] <= R - i then P[i] = P[i']
+        if P[i'] > R - i then expand past R to find P[i]
+        if i + P[i] > R(palindrome centered at i extends beyond R), update C to i and R to i + P[i]
+        pseudocode: 
+            preProcess(string s): 
+                n = len(s)
+                if n == 0: 
+                    return "^$"
+                ret = "^"
+                for i = (0 -> n): 
+                    ret += "#" + s[i]
+                ret += "#$"
+                return ret
+            
+            longestPalindrome(string s): 
+                T = preProcess(s), n = len(T), P = [0] * n, C = R = 0
+                for i = (1 -> n - 1): 
+                    iMirror = 2 * C - i // => i' = i + (C - i)
+                    P[i] = (R > i) ? min(R - i, P[iMirror]) : 0
+                    
+                    // attempt to expand palindrome centered at i
+                    while T[i + 1 + P[i]] == T[i - 1 - P[i]]: 
+                        P[i]++
+                    
+                    // if palindrome centered at i expands past R, adjust center based on expanded palindrome
+                    if i + P[i] > R: 
+                        C = i
+                        R = i + P[i]
+                
+                // find maximum element in P
+                maxLen = centerIndex = 0
+                for i = (1 -> n - 1): 
+                    if P[i] > maxLen: 
+                        maxLen = P[i]
+                        centerIndex = i
+                return s[(centerIndex - 1 - maxLen) / 2, (centerIndex - 1 - maxLen) / 2 + maxLen]  
+
 binary trees: 
     e.g. C -> {B -> {A, D -> {E, F}}, G -> H}
     in-order traversal: 

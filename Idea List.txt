@@ -7,3 +7,8 @@ find nth lexicographically sorted string: find way to index strings and enumerat
 try dp: does the answer to n - 1 help in any way to acquire the answer to n
 use array with pointer instead of stack to save time
 xor's and sums: try a prefix array
+use stringbuilder instead of concatenating strings
+covering an aabb with another aabb: split covered aabb into at most 3 parts: left, middle and right where 
+    the middle part has width shared by both the covering and the covered aabb
+    then split the middle part into top and bottom parts that don't overlap with the covering aabb
+find a certain subsequence in a sequence in O(n): try two pointers
