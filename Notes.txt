@@ -9,9 +9,9 @@
 
 iterative deepening dfs: 
     essentially dfs in bfs
-    iddfs calls dfs, restricting it from going beyond a given depth
+    dfsid calls dfs, restricting it from going beyond a given depth
     pseudocode: 
-        iddfs(src, tarteg, maxDepth): 
+        dfsid(src, target, maxDepth): 
             for limit = (0 -> maxDepth): 
                 if dls(src, target, limit): 
                     return true
@@ -64,28 +64,28 @@ path finding:
 		miraculously requires only 1 iteration if ordered properly
 		pseudocode: 
 			// dist[i][j] = best known dist(i -> j) so far
-			for i = (1 -> n):
-				for j = (1 -> n):
+			for i = (0 -> n - 1):
+				for j = (0 -> n - 1):
 					dist[i][j] = weight[i][j]
 					// inf if not connected
 			
-			for k = (1 -> n): 
-				for i = (1 -> n): 
-					for j = (1 -> n): 
+			for k = (0 -> n - 1): 
+				for i = (0 -> n - 1): 
+					for j = (0 -> n - 1): 
 						if dist[i][k] + dist[k][j] < dist[i][j]: 
 							dist[i][j] = dist[i][k] + dist[k][j];
 		optimizations: 
 			due to the symmetric nature of adjacency matrices of undirected graphs, only iterate through half of the matrix
 			check if dist[i][k] is inf before proceeding to the j loop
 			pseudocode: 
-				for i = (1 -> n):
-					for j = (1 -> n):
+				for i = (0 -> n - 1):
+					for j = (0 -> n - 1):
 						dist[i][j] = weight[i][j](inf if not connected)
 				
-				for k = (1 -> n): 
-					for i = (1 -> n - 1): 
+				for k = (0 -> n - 1): 
+					for i = (0 -> n - 2): 
 						if dist[i][k] < inf: 
-							for j = (i + 1 -> n): 
+							for j = (i + 1 -> n - 1): 
 								if dist[i][k] + dist[k][j] < dist[i][j]: 
 									dist[i][j] = dist[i][k] + dist[k][j];
 		
@@ -472,7 +472,7 @@ big nums:
                 else if sgn(A) > sgn(B): 
                     return "A > B"
                 else: 
-                    for i = (max(A.size, B.size) -> 0): 
+                    for i = (max(A.size, B.size) - 1 -> 0): 
                         if a[i] > b[i]: 
                             if sgn(A) == 0: 
                                 return "A > B"
@@ -490,7 +490,7 @@ big nums:
             pseudocode: 
                 absoluteSubtract(A, B, C): 
                     borrow = 0
-                    for pos = (0 -> max(A.size, B.size)): 
+                    for pos = (0 -> max(A.size, B.size) - 1): 
                         C[pos] = A[pos] - B[pos] - borrow
                         if C[pos] < 0: 
                             C[pos] = C[pos] + base
@@ -505,7 +505,7 @@ big nums:
                 
                 absoluteAdd(A, B, C): 
                     carry = 0
-                    for pos = (0 -> max(A.size, B.size)): 
+                    for pos = (0 -> max(A.size, B.size) - 1): 
                         C[pos] = A[pos] + B[pos] + carry
                         carry = C[pos] / base
                         C[pos] %= base

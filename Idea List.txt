@@ -11,4 +11,4 @@ use stringbuilder instead of concatenating strings
 covering an aabb with another aabb: split covered aabb into at most 3 parts: left, middle and right where 
     the middle part has width shared by both the covering and the covered aabb
     then split the middle part into top and bottom parts that don't overlap with the covering aabb
-find a certain subsequence in a sequence in O(n): try two pointers
+find a certain contiguous subsequence in a sequence in O(n): try two pointers
