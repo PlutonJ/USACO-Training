@@ -6,6 +6,8 @@ TASK: fence9
 
 // scan line by line bottom-up
 // start from the widest line which is y = 1, then go up and use the slopes to determine when to subtract lattice points from each line
+// good to read: Pick's theorem
+// https://www.byvoid.com/zhs/blog/usaco-343-electric-fence
 
 import java.io.*;
 import java.util.*;

@@ -12,3 +12,12 @@ covering an aabb with another aabb: split covered aabb into at most 3 parts: lef
     the middle part has width shared by both the covering and the covered aabb
     then split the middle part into top and bottom parts that don't overlap with the covering aabb
 find a certain contiguous subsequence in a sequence in O(n): try two pointers
+dfs pruning: does sorting anything helps?
+multiple knapsack where all items have value 1: sort items by size
+    sum of sizes <= sum of capacities
+    when an item of size s is placed in knapsack i, another item of size s should be put in knapsack j where j >= i
+    if it is possible to fit the smallest k items, total capacity wasted == sum of capacities - sum of the sizes of the smallest k items
+    dfs from the most constrained item(the item with the largest size)
+    binary search for max({k | k rails can be cut from the boards})
+enumerate and find the largest possible k such that a conditional is met: binary search for k(if lg(upperLimit - lowerLimit) is most likely < max({k | conditional}))
+multiplication is faster than division

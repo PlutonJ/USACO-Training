@@ -1,11 +1,27 @@
-﻿dp: 
-	exponential -> polynomial
-	dfs -> dp
-	4 elements:
-		state: what does dp[i][j] mean
-		function: formula for dp[i][j]
-		initialization
-		answer: where
+binary search: 
+    find position of target value in a sorted array
+    pseudocode: 
+        binarySearch(a, n, t): 
+            l = 0
+            r = n - 1
+            while l <= r: 
+                m = (l + r) / 2
+                if a[m] < t: 
+                    l = m + 1
+                else if a[m] > t: 
+                    r = m - 1
+                else: 
+                    return m
+            return -1
+
+dp: 
+    exponential -> polynomial
+    dfs -> dp
+    4 elements:
+        state: what dp[i][j] stands for
+        function: formula for dp[i][j]
+        initialization
+        answer: where
 
 iterative deepening dfs: 
     essentially dfs in bfs
@@ -31,154 +47,154 @@ iterative deepening dfs:
     this is not as costly as the number of nodes in each level grows exponentially
 
 path finding: 
-	dijkstra's: 
-		O(V ** 2)
-		O(E log V) if use heap to determine next vertex to visit, 
-			but only appreciably faster on large, sparse graphs
-		does not work with negative weight edges
-		pseudocode:
-			for all nodes i:
-				dist[i] = infinity
-				visited[i] = false	// not reachable
-				parent[i] = null	// no path to vertex yet
-			
-			dist[source] = 0
-			while nodesVisited < graphSize:
-				i = unvisited vertex closest to source
-				// to find such node i, keep all dist to source in an array(or node)
-				assert distance[i] != infinity, "graph not connected"
-				visited[i] = true
-				
-				for all neighbors j of i:
-					if dist[i] + weight[i][j] < dist[j]:
-						dist[j] = dist[i] + weight[i][j]
-						parent[j] = i
-	
-	floyd-warshall: 
-		O(V ** 3)
-		finds length of shortest paths between all pairs of vertices
-		works with negative weight edges(no negative cycles)
-		requires adjacency matrix
-		dist[i][j] = weight[i][j] or infinity if no edge connects i and j
-		Ɐ pair (u, v), if ∃ w ∋ dist(u -> w -> v) < dist[u][v] then update dist[u][v]
-		miraculously requires only 1 iteration if ordered properly
-		pseudocode: 
-			// dist[i][j] = best known dist(i -> j) so far
-			for i = (0 -> n - 1):
-				for j = (0 -> n - 1):
-					dist[i][j] = weight[i][j]
-					// inf if not connected
-			
-			for k = (0 -> n - 1): 
-				for i = (0 -> n - 1): 
-					for j = (0 -> n - 1): 
-						if dist[i][k] + dist[k][j] < dist[i][j]: 
-							dist[i][j] = dist[i][k] + dist[k][j];
-		optimizations: 
-			due to the symmetric nature of adjacency matrices of undirected graphs, only iterate through half of the matrix
-			check if dist[i][k] is inf before proceeding to the j loop
-			pseudocode: 
-				for i = (0 -> n - 1):
-					for j = (0 -> n - 1):
-						dist[i][j] = weight[i][j](inf if not connected)
-				
-				for k = (0 -> n - 1): 
-					for i = (0 -> n - 2): 
-						if dist[i][k] < inf: 
-							for j = (i + 1 -> n - 1): 
-								if dist[i][k] + dist[k][j] < dist[i][j]: 
-									dist[i][j] = dist[i][k] + dist[k][j];
-		
-	bfs:
-		O(b ** (d + 1)) time & mem (b = avg out-deg, d = depth)
-		uses queue
-		for unweighted graphs
-		if V large E small, much faster than dijkstra's
+    dijkstra's: 
+        O(V ** 2)
+        O(E log V) if use heap to determine next vertex to visit, 
+            but only appreciably faster on large, sparse graphs
+        does not work with negative weight edges
+        pseudocode:
+            for all nodes i:
+                dist[i] = infinity
+                visited[i] = false    // not reachable
+                parent[i] = null    // no path to vertex yet
+            
+            dist[source] = 0
+            while nodesVisited < graphSize:
+                i = unvisited vertex closest to source
+                // to find such node i, keep all dist to source in an array(or node)
+                assert distance[i] != infinity, "graph not connected"
+                visited[i] = true
+                
+                for all neighbors j of i:
+                    if dist[i] + weight[i][j] < dist[j]:
+                        dist[j] = dist[i] + weight[i][j]
+                        parent[j] = i
+    
+    floyd-warshall: 
+        O(V ** 3)
+        finds length of shortest paths between all pairs of vertices
+        works with negative weight edges(no negative cycles)
+        requires adjacency matrix
+        dist[i][j] = weight[i][j] or infinity if no edge connects i and j
+        Ɐ pair (u, v), if ∃ w ∋ dist(u -> w -> v) < dist[u][v] then update dist[u][v]
+        miraculously requires only 1 iteration if ordered properly
+        pseudocode: 
+            // dist[i][j] = best known dist(i -> j) so far
+            for i = (0 -> n - 1):
+                for j = (0 -> n - 1):
+                    dist[i][j] = weight[i][j]
+                    // inf if not connected
+            
+            for k = (0 -> n - 1): 
+                for i = (0 -> n - 1): 
+                    for j = (0 -> n - 1): 
+                        if dist[i][k] + dist[k][j] < dist[i][j]: 
+                            dist[i][j] = dist[i][k] + dist[k][j];
+        optimizations: 
+            due to the symmetric nature of adjacency matrices of undirected graphs, only iterate through half of the matrix
+            check if dist[i][k] is inf before proceeding to the j loop
+            pseudocode: 
+                for i = (0 -> n - 1):
+                    for j = (0 -> n - 1):
+                        dist[i][j] = weight[i][j](inf if not connected)
+                
+                for k = (0 -> n - 1): 
+                    for i = (0 -> n - 2): 
+                        if dist[i][k] < inf: 
+                            for j = (i + 1 -> n - 1): 
+                                if dist[i][k] + dist[k][j] < dist[i][j]: 
+                                    dist[i][j] = dist[i][k] + dist[k][j];
+        
+    bfs:
+        O(b ** (d + 1)) time & mem (b = avg out-deg, d = depth)
+        uses queue
+        for unweighted graphs
+        if V large E small, much faster than dijkstra's
 
 mst: 
-	prim's: 
-		O(N ** 2)
-		changing any element requires complete recalculation
-		does not work with extra constraints(e.g. avg(dist) has to be low)
-		works with multiple edges between 2 nodes
-		does not extend to directed graphs
-		pseudocode: 
-			// dist[j] = dist from tree to node j
-			// src[j] = node of current mst closest to node j
-			for all nodes i: 
-				dist[i] = infinity
-				inTree[i] = false
-				src[i] = null
-			
-			// add node 1 to tree
-			treeSize = 1
-			treeCost  0
-			inTree[1] = true
-			for all neighbors j of node 1: 		// update distances
-				dist[j] = weight[1][j]
-				src[j] = 1
-			
-			while treeSize < grashSize: 
-				i = node with minimum dist to tree
-				assert dist[i] != infinity, "graph not connected"
-				
-				// add edge (src[i], i) to mst
-				treeSize++
-				treeCost = treeCost + dist[i]
-				inTree[i] = true
-				
-				// update dist after node i added
-				for all neighbors j of i: 
-					if dist[j] > weight[i][j]: 
-						dist[j] = weight[i][j]
-						src[j] = i
+    prim's: 
+        O(N ** 2)
+        changing any element requires complete recalculation
+        does not work with extra constraints(e.g. avg(dist) has to be low)
+        works with multiple edges between 2 nodes
+        does not extend to directed graphs
+        pseudocode: 
+            // dist[j] = dist from tree to node j
+            // src[j] = node of current mst closest to node j
+            for all nodes i: 
+                dist[i] = infinity
+                inTree[i] = false
+                src[i] = null
+            
+            // add node 1 to tree
+            treeSize = 1
+            treeCost  0
+            inTree[1] = true
+            for all neighbors j of node 1:         // update distances
+                dist[j] = weight[1][j]
+                src[j] = 1
+            
+            while treeSize < grashSize: 
+                i = node with minimum dist to tree
+                assert dist[i] != infinity, "graph not connected"
+                
+                // add edge (src[i], i) to mst
+                treeSize++
+                treeCost = treeCost + dist[i]
+                inTree[i] = true
+                
+                // update dist after node i added
+                for all neighbors j of i: 
+                    if dist[j] > weight[i][j]: 
+                        dist[j] = weight[i][j]
+                        src[j] = i
 
 pattern searching: 
-	knuth morris pratt(kmp) algorithm: 
-		preprocess pattern to construct auxiliary lps[] of same size as pattern
-		lps[i] = longest proper prefix(!= the string itself) of pattern[0 : i] which is also a suffix of pattern[0 : i]
-		e.g. "AAAA" -> [0, 1, 2, 3]; "AABAACAABAA" -> [0, 1, 0, 1, 2, 0, 1, 2, 3, 4, 5]
-		using lps to decide next positions: 
-			start comparison with pattern[j] with j = 0 at current window of text
-			keep incrementing i and j for matching characters text[i] and pattern[j]
-			when there is a mismatch: 
-				if j is 0, increment i to shift to next window
-				otherwise, 
-				known(when j > 0): pattern[0 : j - 1] matches text[i - j + 1 : i - 1]
-				also from the definition of lps: lps[j - 1] = count of characters of pattern[0 : j - 1] that are both proper prefix and suffix
-				conslusion: no need to match the lps[j - 1] characters text[i - j : i - 1] since they match(change only j to lps[j - 1])
-			(also when pattern found, reset j to lps[j - 1] by the same reasoning)
-		pseudocode: 
-			len = 0		// length of previous longest prefix suffix
-			i = 1
-			lps[0] = 0	// lps[0] is always 0
-			
-			while i < len(pattern): 
-				if pattern[i] == pattern[len]: 
-					len++
-					lps[i] = len
-					i++
-				else: 
-					if len != 0: 
-						len = lps[len - 1]
-						// no i increment
-					else: 
-						lps[i] = len
-						i++
-			
-			i = j = 0
-			while i < len(text): 
-				if pattern[j] == text[j]: 
-					j++
-					i++
-				if j == len(pattern): 
-					// pattern found at index (i - j)
-					j = lps[j - 1]
-				else if i < len(text) && pattern[j] != text[i]: 
-					if j != 0: 
-						j = lps[j - 1]
-					else: 
-						i++
+    knuth morris pratt(kmp) algorithm: 
+        preprocess pattern to construct auxiliary lps[] of same size as pattern
+        lps[i] = longest proper prefix(!= the string itself) of pattern[0 : i] which is also a suffix of pattern[0 : i]
+        e.g. "AAAA" -> [0, 1, 2, 3]; "AABAACAABAA" -> [0, 1, 0, 1, 2, 0, 1, 2, 3, 4, 5]
+        using lps to decide next positions: 
+            start comparison with pattern[j] with j = 0 at current window of text
+            keep incrementing i and j for matching characters text[i] and pattern[j]
+            when there is a mismatch: 
+                if j is 0, increment i to shift to next window
+                otherwise, 
+                known(when j > 0): pattern[0 : j - 1] matches text[i - j + 1 : i - 1]
+                also from the definition of lps: lps[j - 1] = count of characters of pattern[0 : j - 1] that are both proper prefix and suffix
+                conslusion: no need to match the lps[j - 1] characters text[i - j : i - 1] since they match(change only j to lps[j - 1])
+            (also when pattern found, reset j to lps[j - 1] by the same reasoning)
+        pseudocode: 
+            len = 0        // length of previous longest prefix suffix
+            i = 1
+            lps[0] = 0    // lps[0] is always 0
+            
+            while i < len(pattern): 
+                if pattern[i] == pattern[len]: 
+                    len++
+                    lps[i] = len
+                    i++
+                else: 
+                    if len != 0: 
+                        len = lps[len - 1]
+                        // no i increment
+                    else: 
+                        lps[i] = len
+                        i++
+            
+            i = j = 0
+            while i < len(text): 
+                if pattern[j] == text[j]: 
+                    j++
+                    i++
+                if j == len(pattern): 
+                    // pattern found at index (i - j)
+                    j = lps[j - 1]
+                else if i < len(text) && pattern[j] != text[i]: 
+                    if j != 0: 
+                        j = lps[j - 1]
+                    else: 
+                        i++
 
 longest palindromic substring: 
     manacher's algorithm: 
@@ -237,70 +253,70 @@ binary trees:
         e.g. AEFDBHGC              
 
 knapsack: 
-	given a collection of objects with size and value and the total space available, 
-		find the set of objects that maximizes the sum of the value of the set with 
-		size constrainted by the limit, the total # or size of any particular item
-		used in the set cannot exceed its availability
-	fractional knapsack: 
-		allowed to place fractional objects in the knapsack
-		O(N log N) since must first sort by value to size ratio(O(N ** 2) without sorting)
-		rare to have both size and availability
-			(do trivial transmation to have all objects of size 1, have availability = original size * availability, 
-			and divide the value by original size)
-		use greedy algorithm: 
-			find the object with highest value to size ratio
-			if total capacity remaining >= availability of object, put all in knapsack and iterate
-			if total capacity remaining < availability of object, use as much as possible and terminate
-	integer knapsack: 
-		solvable using dp if knapsack small enough: 
-			O(KN), K = size of knapsack, N = sum of availability of objects
-			dp[i] = max value that a knapsack of size i can have
-			update dp for an object of isze S by traversing in reverse order and seeing if 
-				placing the objext into the knapsack of size K yields a better set than the 
-				current best knapsack of size K + S
-		if knapsack too large to allocate array, use recursive descent since NP-complete
-		if all sizes are same, solve greedily, picking the objects in decreasing value order until knapsack full
-		if values are all 1, solve greedily, picking the objects in increasing size order until knapsack full
-	multiple knapsack: 
-		more than 1 knapsack is to be filled(multiple integer knapsacks)
-		state space is too large for dp, use recursive descent
-		if values are all 1 && max # of objects that can be placed in all knapsacks is n, 
-			then there is a solution which uses n smallest objects
-			
+    given a collection of objects with size and value and the total space available, 
+        find the set of objects that maximizes the sum of the value of the set with 
+        size constrainted by the limit, the total # or size of any particular item
+        used in the set cannot exceed its availability
+    fractional knapsack: 
+        allowed to place fractional objects in the knapsack
+        O(N log N) since must first sort by value to size ratio(O(N ** 2) without sorting)
+        rare to have both size and availability
+            (do trivial transmation to have all objects of size 1, have availability = original size * availability, 
+            and divide the value by original size)
+        use greedy algorithm: 
+            find the object with highest value to size ratio
+            if total capacity remaining >= availability of object, put all in knapsack and iterate
+            if total capacity remaining < availability of object, use as much as possible and terminate
+    integer knapsack: 
+        solvable using dp if knapsack small enough: 
+            O(KN), K = size of knapsack, N = sum of availability of objects
+            dp[i] = max value that a knapsack of size i can have
+            update dp for an object of size S by traversing in reverse order and seeing if 
+                placing the objext into the knapsack of size K yields a better set than the 
+                current best knapsack of size K + S
+        if knapsack too large to allocate array, use recursive descent since NP-complete
+        if all sizes are same, solve greedily, picking the objects in decreasing value order until knapsack full
+        if values are all 1, solve greedily, picking the objects in increasing size order until knapsack full
+    multiple knapsack: 
+        more than 1 knapsack is to be filled(multiple integer knapsacks)
+        state space is too large for dp, use recursive descent
+        if values are all 1 && max # of objects that can be placed in all knapsacks is n, 
+            then there is a solution which uses n smallest objects
+            
 eulerian tour: 
-	O(m + n) (m = # of edges, n = # of nodes) if graph in adjacency matrix form
-	given an undirected graph, find a path which uses every edge once
-	eulerian circuit: starts and ends on the same vertex
-	a graph has an eulerian path: 
-		iff connected
-		iff every node except 2 has even degree(of the two odd degree nodes, one is start and the other is end)
-	a graph has an eulerian circuit:
-		iff connected
-		iff every node has even degree
-	pseudocode: 
-		circuitPos = 0
-		findCircuit(node 1)
-		
-		findCircuit(node i): 
-			if i has no neighbors: 
-				circuit[circuitPos++] = i
-			else: 
-				while i has neighbors: 
-					pick random neighbor j of i
-					// for multiple edges between the same nodes, subtract 1 from the adjacency matrix
-					deleteEdges(i, j)
-					findCircuit(j)
-				circuit[circuitPos++] = i
-	to find eulerian tour, findCircuit(one of the odd degree nodes)
-	may overflow runtime stack with larger graphs thus use own stack
-	works for multple edges between the same nodes and self-loops(1 indegree + 1 outdegree)
-	a directed graph has a eulerian circuit if strongly connected and indegree == outdegree for each node, except traverse the arcs in reverse order
+    O(m + n) (m = # of edges, n = # of nodes) if graph in adjacency matrix form
+    given an undirected graph, find a path which uses every edge once
+    eulerian circuit: starts and ends on the same vertex
+    a graph has an eulerian path: 
+        iff connected
+        iff every node except 2 has even degree(of the two odd degree nodes, one is start and the other is end)
+    a graph has an eulerian circuit:
+        iff connected
+        iff every node has even degree
+    pseudocode: 
+        circuitPos = 0
+        findCircuit(node 1)
+        
+        findCircuit(node i): 
+            if i has no neighbors: 
+                circuit[circuitPos++] = i
+            else: 
+                while i has neighbors: 
+                    pick random neighbor j of i
+                    // for multiple edges between the same nodes, subtract 1 from the adjacency matrix
+                    deleteEdges(i, j)
+                    findCircuit(j)
+                circuit[circuitPos++] = i
+    to find eulerian tour, findCircuit(one of the odd degree nodes)
+    may overflow runtime stack with larger graphs thus use own stack
+    works for multple edges between the same nodes and self-loops(1 indegree + 1 outdegree)
+    a directed graph has a eulerian circuit if strongly connected and indegree == outdegree for each node, except traverse the arcs in reverse order
 
 computational geometry: 
-	dot product = |u||v|cos(theta)
-	|cross product| = |u||v|sin(theta)
-	area of polygon = (1 / 2)|x1 x2 ... xn|
-	                         |y1 y2 ... yn| where the determinant = x1y2 + x2y3 + ... + xny1 - y1x2 - y2x3 - ... - ynx1
+    dot product = |u||v|cos(theta)
+    |cross product| = |u||v|sin(theta)
+    area of polygon = (1 / 2)|x1 x2 ... xn|
+                             |y1 y2 ... yn| where the determinant = x1y2 + x2y3 + ... + xny1 - y1x2 - y2x3 - ... - ynx1
     dist from point to line d(P, AB) = |(P - A) x (B - A)| / |B - A|( = |AB||AP|sin(theta) / |AB| = |AP|sin(theta))
     check if points C and D are on the same side of line AB(for 2 dimensions): 
         |(B - A) x (C - A)| * |(B - A) x (D - A)| > 0 => cross products have same signs
@@ -439,7 +455,7 @@ network flow:
                 to determine the path, try removing each edge in increasing weight order, and seeing if it reduces the network flow
                 if removing the edge does reduce the network flow, it should reduce the flow by the capacity of the edge
                 the first edge that reduces the flow is a member of the minimum cut, iterate on the graph without that edge
-		the minimum cut is also the set of arcs that are in the original network but go from a node reachable from the source to one that is unreachable in the residual network
+        the minimum cut is also the set of arcs that are in the original network but go from a node reachable from the source to one that is unreachable in the residual network
                 max-flow min-cut theorem: 
                     in a flow network, the maximum amount of flow passing from the source to the sink is equal to the total weight of the edges in the minimum cut
                     proof: 
