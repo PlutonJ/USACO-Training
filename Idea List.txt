@@ -21,3 +21,5 @@ multiple knapsack where all items have value 1: sort items by size
     binary search for max({k | k rails can be cut from the boards})
 enumerate and find the largest possible k such that a conditional is met: binary search for k(if lg(upperLimit - lowerLimit) is most likely < max({k | conditional}))
 multiplication is faster than division
+simulated annealing: check if hill climbing gives coorect results first
+too geometrically mathematical: it could just be a search

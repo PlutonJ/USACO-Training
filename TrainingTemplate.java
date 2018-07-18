@@ -7,6 +7,8 @@ TASK:
 import java.io.*;
 import java.util.*;
 
+import static java.lang.Math.*;
+
 class TrainingTemplate {
     static String name = "";
     static BufferedReader in;

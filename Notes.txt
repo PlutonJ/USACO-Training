@@ -1,4 +1,4 @@
-binary search: 
+﻿binary search: 
     find position of target value in a sorted array
     pseudocode: 
         binarySearch(a, n, t): 
@@ -315,12 +315,13 @@ eulerian tour:
 computational geometry: 
     dot product = |u||v|cos(theta)
     |cross product| = |u||v|sin(theta)
+    projection of u onto v = ((u · v) / (v · v)) * v
     area of polygon = (1 / 2)|x1 x2 ... xn|
                              |y1 y2 ... yn| where the determinant = x1y2 + x2y3 + ... + xny1 - y1x2 - y2x3 - ... - ynx1
     dist from point to line d(P, AB) = |(P - A) x (B - A)| / |B - A|( = |AB||AP|sin(theta) / |AB| = |AP|sin(theta))
     check if points C and D are on the same side of line AB(for 2 dimensions): 
-        |(B - A) x (C - A)| * |(B - A) x (D - A)| > 0 => cross products have same signs
-        note that the magnitude of the cross products are their z values in this case(|A x B| = AxBy - BxAy)
+        z((B - A) x (C - A)) * z((B - A) x (D - A)) > 0 => z value of cross products have same signs
+        note that z(U x V) = UxVy - VxUy
     check if a point A is in a triangle: 
         find point B which is in the triangle(e.g. average of the 3 vertices)
         check if A is on the same side as B for all 3 edges
@@ -340,9 +341,10 @@ computational geometry:
             Ax + (Bx - Ax)i = Cx + (Dx - Cx)j
             Ay + (By - Ay)i = Cy + (Dy - Cy)j
             Az + (Bz - Az)i = Cz + (Dz - Cz)j
-            if 0 <= i, j <= 1, then the intersection is at (Ax + (Bx - Ax)i, Ay + (By - Ay)i, Az + (Bz - Az)i)
+            if 0 <= i, j <= 1, then they intersection is at (Ax + (Bx - Ax)i, Ay + (By - Ay)i, Az + (Bz - Az)i)
     find intersection of 2 lines: 
         solve the above set of equations(discard the z equation for 2 dimensions)
+        i = ((Cx - Ax) * (Dy - Cy) - (Cy - Ay) * (Dx - Cx)) / ((Bx - Ax) * (Dy - Cy) - (By - Ay) * (Dx - Cx)) = z((C - A) x (D - C)) / z((B - A) x (D - C))
     check if a polygon is convex: 
         traverse the vertices in clock-wise order, for each triplet of consecutive points A, B, and C, 
         calculate (B - A) x (C - A)
