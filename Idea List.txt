@@ -1,5 +1,5 @@
 patterns: common prefix(large datasets will most likely be patterned)
-stack: +1 for start, -1 for end
+layering paint/pics -> stack: +1 for start, -1 for end
 network flow
 geometric problem with reasonable constraints -> big array
 find nth lexicographically sorted string: find way to index strings and enumerate prefixes
@@ -23,3 +23,4 @@ enumerate and find the largest possible k such that a conditional is met: binary
 multiplication is faster than division
 simulated annealing: check if hill climbing gives coorect results first
 too geometrically mathematical: it could just be a search
+careful for integer multiplication overflow

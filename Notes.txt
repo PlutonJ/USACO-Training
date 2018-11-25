@@ -1,5 +1,1477 @@
-﻿binary search: 
+﻿data structures: 
+    
+    flat array
+    
+    difference array: 
+        singular update in O(1) time
+        range update in O(1) time
+        can be extended to xor
+        
+        pseudocode: 
+            // d = difference array
+            init(a): 
+                d[0] = a[0]
+                for i = (1 -> len(a) - 1): 
+                    d[i] = a[i] - a[i - 1]
+            
+            // add x to all elements from a[i] to a[j]
+            upd(i, j, x): 
+                d[i] += x
+                d[j + 1] -= x
+    
+    prefix sum array: 
+        range sum in O(1) time
+        can be extended to min / max for prefix only
+        can be extended to xor for arbitrary range
+        
+        pseudocode: 
+            // p = prefix sum array
+            init(a): 
+                p[0] = a[0]
+                for i = (1 -> len(a) - 1): 
+                    p[i] = a[i] + p[i - 1]
+            
+            // sum of elements in range [i, j)
+            sum(i, j): 
+                return p[j - 1] - p[i - 1]
+    
+    binary indexed tree(fenwick tree): 
+        singular update in O(log N) time
+        range sum in O(log N) time
+        better than segment tree in: 
+            requiring less space
+            easy implementation
+        can be extended to xor
+        
+        pseudocode: 
+            // bit = binary indexed tree
+            init(a): 
+                len(bit) = len(a) + 1
+                for i = (0 -> len(a) - 1): 
+                    upd(i, a[i])
+            
+            // add x to the element at index i
+            upd(i, x): 
+                i++
+                while i < len(bit): 
+                    bit[i] += x
+                    i += i & (-i)
+            
+            // sum of all elements in range [0, i)
+            sum(i): 
+                s = 0
+                while i > 0: 
+                    s += bit[i]
+                    i -= i & (-i)
+    
+    segment tree: 
+        singular update in O(log N) time
+        range sum in O(log N) time
+        space complexity: O(2 ** ceil(lg(N)) == O(N)
+        can be extended to xor / min / max / etc.
+        
+        pseudocode: 
+            // st = segment tree
+            init(a): 
+                n = len(a)
+                x = ceil(lg(n))
+                maxSize = 2 * (2 ** x) - 1
+                len(st) = maxSize
+                construct(a, 0, n - 1, 0)
+            
+            // recursive function that constructs segment tree for a[s : e]
+            // i is the current index in the segment tree
+            construct(a, s, e, i): 
+                if s == e: 
+                    st[i] = st[s]
+                    return a[s]
+                m = s + (e - s) / 2
+                st[i] = construct(a, s, m, 2 * i + 1) + construct(a, m + 1, e, 2 * i + 2)
+                return st[i]
+            
+            // recursive function to update the nodes which have the given index in their range
+            // s = starting index of segment represented by the current node
+            // e = ending index of segment represented by the current node
+            // i = index of element to be updates in the original flat array
+            // d = value to be added to all nodes which have i in range
+            // si = current index in the segment tree
+            upd_r(s, e, i, d, si): 
+                if i < s || i > e: 
+                    return
+                
+                st[si] += d
+                if e != s: 
+                    m = s + (e - s) / 2
+                    upd_r(s, m, i, d, 2 * si + 1)
+                    upd_r(m + 1, e, i, d, 2 * si + 2)
+            
+            // recursive function to get the sum of values given range
+            // s = starting index of segment represented by the current node
+            // e = ending index of segment represented by the current node
+            // qs = starting index of query range
+            // qe = ending index of query range
+            // i = current index in the segment tree
+            sum_r(s, e, qs, qe, i): 
+                // if segment of this node is a part of the given range
+                if qs <= s && qe >= e: 
+                    return st[i]
+                
+                // if segment of this node is outside of the given range
+                if e < qs || s > qe: 
+                    return 0
+                
+                // a part of the segment of this node overlaps with the given range
+                m = s + (e - s) / 2
+                return sum_r(s, m, qs, qe, 2 * i + 1) + sum_r(s, m + 1, e, qs, qe, 2 * i + 2)
+            
+            // add x to the element at index i
+            upd(i, x):  
+                upd_r(0, n - 1, i, x, 0)
+            
+            // sum of elements in range [i, j)
+            sum(i, j): 
+                return sum_r(0, n - 1, i, j - 1, 0)
+        
+        pseudocode of efficient implementation: 
+            init(a): 
+                n = len(a)
+                len(bit) = 2 * n
+                // insert leaf nodes in tree
+                for i = (0 -> n - 1): 
+                    bit[n + i] = a[i]
+                
+                // build the tree by calculating parents
+                for i = (n - 1 -> 1): 
+                    bit[i] = bit[i << 1] + bit[i << 1 | 1]
+            
+            // add x to the element at index i
+            upd(i, x): 
+                bit[n + i] += x
+                i += n
+                
+                // move upward and update parents
+                for j = i, j > 1, j >>= 1: 
+                    bit[j >> 1] = bit[j] + bit[j ^ 1]
+            
+            // sum of elements in range [i, j)
+            sum(i, j): 
+                s = 0
+                for i += n, j += n, i < j, i >>= 1, j >>= 1: 
+                    if i & 1 == 1: 
+                        s += bit[i++]
+                    if j & 1 == 1: 
+                        s += bit[--j]
+                return s
+    
+    array embedded binary tree: 
+        root = 0
+        left child of node i = 2 * i + 1
+        right child of node i = 2 * i + 2
+        parent of node i = floor((i - 1) / 2) if i > 0
+        
+    binary tree: 
+        e.g. C -> {B -> {A, D -> {E, F}}, G -> H}
+        
+        definitions: 
+            full binary tree: 
+                a binary tree in which every node other than the leaves has two children, and all leaves have the same depth
+            complete binary tree: 
+                a binary tree in which every level, except possibly the last one, is completely filled, and all nodes are as far left as possible
+                a full binary tree is a complete, a complete binary tree is not necessarily full
+        
+        in-order traversal: 
+            left sub-tree, root, right sub-tree
+            e.g. ABEDFCHG
+        
+        pre-order traversal: 
+            root, left sub-tree, right sub-tree
+            e.g. CBADEFGH
+        
+        post-order traversal: 
+            left sub-tree, right sub-tree, root
+            e.g. AEFDBHGC
+        
+        finding the lowest common ancestor(lca) of a binary tree: 
+            let t be a rooted tree
+            the lca of 2 nodes u and v is defined as the lowest node in t that has both u and v as descendants(where we allow a node to be a descendant of itself)
+            
+            single query in O(N) time: 
+                traverse the tree starting from the root
+                if any of the given keys matches with the root, then the root is lca(assuming that both keys are present)
+                if the root does not match with any of the keys, recur for left and right subtree
+                the node which has 1 key present in its left subtree and the other key present in the right subtree is the lca
+                if both keys lie in one of the subtrees, then that subtree has the lca
+                
+                pseudocode: 
+                    node: 
+                        left, right, key
+                    
+                    lca(root, u, v): 
+                        if root == null: 
+                            return null
+                        
+                        if root.key == u || root.key == v: 
+                            return root
+                        
+                        left = lca(root.left, u, v)
+                        right = lca(root.right, u, v)
+                        
+                        if left != null && right != null: 
+                            return root
+                        
+                        return left == null ? right : left
+            
+            precomputation in O(N) time and queries in O(log N) time using segment tree: 
+                this approach reduces the problem of finding the lca of two nodes in a tree to a range minimum query(rmq) problem
+                since this approach uses a segment tree, it require O(N) extra space
+                
+                reduction of lca to rmq: 
+                    traverse the tree starting from the root by a counter-clockwise eulerian tour: 
+                        root -> left child -> root -> right child -> root
+                    
+                    key observation: 
+                        the lca is the node with the lowest depth amongs all the nodes that occur between consecutive occurrences of u and v(inclusive) in the eulerian tour
+                    
+                    this approach requires 3 arrays for implementation: 
+                        nodes visited in order of the eulerian tour
+                        depth of each node visited in the eulerian tour
+                        index of the first occurence of a node in the eulerian tour(since any occurrence would be good, track the first one)
+                
+                outline: 
+                    do a eulerian tour on the tree, fill the euler, depth, and first occurrence arrays
+                    using the first occurrence array, get the indices corresponding to the2 nodes which will be the corners of the range in the level array that is fed to the rmq algorithm
+                    once the algorithm returns the index of the minimum depth in the range, use it to determine the lca using the euler array
+                
+                pseudocode: 
+                    node: 
+                        left, right, key
+                    
+                    lg(x): 
+                        ans = 0
+                        while x >>= 1 > 0: 
+                            ans++
+                        return ans
+                    
+                    // a recursive function to get the minimum value in a given range
+                    // index = index of current node in the segment tree
+                    // s, e = starting and ending indices of the segment represented by the current node
+                    // qs, qe = starting and ending indices of the query range
+                    // st = segment tree array
+                    rmq_r(index, s, e, qs, qe, st): 
+                        if qs <= s && qe >= e: 
+                            return st[index]
+                        else if e < qs || s > qe: 
+                            return -1
+                        
+                        m = (s + e) / 2
+                        q1 = rmq_r(2 * index + 1, s, m, qs, qe, st)
+                        q2 = rmq_r(2 * index + 2, m + 1, e, qs, qe, st)
+                        
+                        if q == -1: 
+                            return q2
+                        else if q2 == -1: 
+                            return q1
+                        
+                        return level[q1] < level[q2] ? q1 : q2
+                    
+                    rmq(st, n, qs, qe): 
+                        // erroneous input
+                        if qs < 0 || qe >= n || qs > qe: 
+                            return -1
+                        return rmq_r(0, 0, n - 1, qs, qe, st)
+                    
+                    // a recursive function that constructs the segment tree for array [s, ..., e]
+                    // i = index of current node in segment tree st
+                    construct_r(i, s, e, a, st): 
+                        if s == e: 
+                            st[i] = s
+                        else: 
+                            m = (s + e) / 2
+                            construct_r(2 * i + 1, s, m, a, st)
+                            construct_r(2 * i + 2, m + 1, e, a, st)
+                            
+                            if a[st[2 * i + 1]] < a[st[2 * i + 2]]: 
+                                st[i] = st[2 * i + 1]
+                            else: 
+                                st[i] = st[2 * i + 2]
+                    
+                    // construct the segment tree from the given array
+                    construct(a, n): 
+                        x = lg(n) + 1
+                        maxSize = 2 * (1 << x) - 1
+                        st = [null] * maxSize
+                        construct_r(0, 0, n - 1, a, st)
+                        return st
+                    
+                    euler(n, d): 
+                        if n != null: 
+                            euler[ind] = n.key
+                            depth[ind] = d
+                            ind++
+                            
+                            // if unvisited, mark first occurence
+                            if occur[n.key] == null: 
+                                occur[n.key] = ind - 1
+                            
+                            // tour left subtree if exists, remark on return
+                            if n.left != null: 
+                                euler(node.left, d + 1)
+                                euler[ind] = n.key
+                                depth[ind] = d
+                                ind++
+                            
+                            // tour right subtree if exists, remark on return
+                            if n.right != null: 
+                                euler(n.right, d + 1)
+                                euler[ind] = n.key
+                                depth[ind] = d
+                                ind++
+                    
+                    // find lca of u and v assuming they are present in the tree
+                    lca(root, u, v): 
+                        fill(occur, null)
+                        ind = 0
+                        euler(root, 0)
+                        st = construct(depth, 2 * n - 1)
+                        
+                        if occur[u] > occur[v]: 
+                            swap(u, v)
+                        
+                        return euler[rmq(st, 2 * n - 1, occur[u], occur[v])]
+    
+    binary heap: 
+        a binary heap is a binary tree with the following properties: 
+            it is a complete tree; this property makes a binary heap suitable to be stored in an array
+            a binary heap is either a min heap or max heap; the key at the root must be minimum / maximum among all keys present in the binary heap, the same property must be recursively tree for all nodes in the binary heap
+        
+        applications: 
+            heap sort
+            priority queue
+            graph algorithms: 
+                e.g. dijkstra's shortest path, prim's minimum spanning tree
+            other problems: 
+                e.g. k-th largest element in an array, sort an almost sorted array, merge k sorted arrays
+        
+        pseudocode for min heap: 
+            // h = min heap
+            init(cap): 
+                size = 0
+                capacity = cap
+                len(h) = cap
+            
+            init(a): 
+                size = 0
+                capacity = len(a)
+                len(h) = len(a)
+                for i in a: 
+                    insert(i)
+            
+            parent(i): 
+                return (i - 1) / 2
+            
+            left(i): 
+                return 2 * i + 1
+            
+            right(i): 
+                return 2 * i + 2
+            
+            insert(i): 
+                if size == capacity: 
+                    throw "overflow"
+                
+                j = size++
+                h[j] = i
+                
+                // fix the min heap property if violated
+                while j != 0 && h[parent(j)] > h[j]: 
+                    swap(h[j], h[parent[j]])
+                    j = parent(j)
+            
+            // decreases value of key at index i to x
+            // x is assumed to be smaller than h[i]
+            decrease(i, x): 
+                h[i] = x
+                
+                // fix the min heap property if violated
+                while j != 0 && h[parent(j)] > h[j]: 
+                    swap(h[j], h[parent[j]])
+                    j = parent(j)
+            
+            // returns and removes the minimum element
+            extract(): 
+                if size <= 0: 
+                    return inf
+                else if size == 1: 
+                    return h[0]
+                
+                root = h[0]
+                h[0] = h[--size]
+                heapify(0)
+                return root
+            
+            // deletes key at index i
+            delete(i): 
+                decrease(i, -inf)
+                extract()
+            
+            // a recursive method to heapify a subtree with the root at given index
+            heapify(i): 
+                l = left(i)
+                r = right(i)
+                smallest = i
+                if l < size && h[l] < h[smallest]: 
+                    smallest = l
+                if r < size && h[r] < h[smallest]: 
+                    smallest = r
+                if smallest != i: 
+                    swap(h[i], h[smallest])
+                    heapify(smallest)
+    
+    binary search tree(bst): 
+        a binary search tree is a binary tree which has the following properties: 
+            the left subtree of a node contains only nodes with keys lesser than the node's key
+            the right subtree of a node contains only nodes with keys greater than the nodes' key
+            the left and right subtree each must also be a binary search tree
+            there must be no duplicate nodes
+        
+        pseudocode: 
+            node: 
+                node(item): 
+                    key = item
+                    left = right = null
+            
+            insert(key): 
+                root = insert_r(root, key)
+            
+            // recursive function to insert a new key in bst
+            insert_r(root, key): 
+                if root == null: 
+                    root = node(key)
+                    return root
+                
+                if key < root.key: 
+                    root.left = insert_r(root.left, key)
+                else if key > root.key: 
+                    root.right = insert_r(root.right, key)
+                return root
+            
+            search(key): 
+                if root == null || root.key == key: 
+                    return root
+                
+                if root.key > key: 
+                    return search(root.left, key)
+                
+                return search(root.right, key)
+    
+     self-balancing binary search tree: 
+        a binary search tree where the difference between heights of left and right subtrees cannot be more than 1 for all nodes
+        since most bst operations(e.g. search, max, min, insert, delete, etc.) take O(h) time where h is the height of the bst, the cost may become O(N) for a skewed binary tree
+        thus self-balancing bst ensures that the height of the bst always remains at O(log N) so that an upper bound of O(log N) runtime can be guaranteed for these operations
+        
+        avl tree: 
+            to make sure that the given tree remains avl after every insertion, augment the standard bst insert operation to perform re-balancing
+            following are 2 basic operations that can be perforemd to re-balance a bst without violating the bst property keys(left) < key(root) < keys(right): 
+                let T1, T2, and T3 be subtrees of the tree rooted with x or y
+                
+                left rotation: 
+                    y -> {x -> {T1, T2}, T3}
+                        == left rotation ==> x -> {T1, y -> {T2, T3}}
+                
+                right rotation: 
+                    x -> {T1, y -> {T2, T3}}
+                        == right rotation ==> y -> {x -> {T1, T2}, T3}
+                
+                the keys in the above trees follow the following order: 
+                    keys(T1) < key(x) < keys(T2) < key(y) < keys(T3)
+                
+                thus the bst property is not violated
+            
+            insertion in an avl tree: 
+                let the newly inserted node be w
+                perform standard bst insertion for w
+                starting from w, travel up and find the first unbalanced node; let z be the first unbalanced node, y be the child of z that comes on the path from w to z and x be the grandchild of z that comes on the path from w to z
+                re-balance the tree by performing appropriate rotations on the subtree rooted with z; there can be 4 possible cases that needs to be handled as x, y, and z can be arranged in 4 ways: 
+                    y is left child of z and x is left child of y(left left case)
+                    y is left child of z and x is right child of y(left right case)
+                    y is right child of z and x is left child of y(right left case)
+                    y is right child of z and x is right child of y(right right case)
+                
+                let T1, T2, T3, and T4 be subtrees
+                for left left case: 
+                    z -> {y -> {x -> {T1, T2}, T3}, T4}
+                        == right rotate z ==> y -> {x -> {T1, T2}, z -> {T3, T4}}
+                
+                for left right case: 
+                    z -> {y -> {T1, x -> {T2, T3}}, T4}
+                        == left rotate y ==> z -> {x -> {y -> {T1, T2}, T3}, T4}
+                            == right rotate z ==> x -> {y -> {T1, T2}, z -> {T3, T4}}
+                
+                for right left case: 
+                    z -> {T1, y -> {x -> {T2, T3}, T4}}
+                        == right rorate y ==> z -> {T1, x -> {T2, y -> {T3, T4}}}
+                            == left rotate z ==> x -> {z -> {T1, T2}, y -> {T3, T4}}
+                
+                for right right case: 
+                    z -> {T1, y -> {T2, x -> {T3, T4}}}
+                        == left rotate z ==> y -> {z -> {T1, T2}, x -> {T3, T4}}
+            
+            outline of implementation of avl insertion: 
+                perform the normal bst insertion
+                the current node must be 1 of the ancestors of the newly inserted node; update the height of the current node
+                get the balance factor (left subtree height - right subtree height) of the current node
+                if balance factor > 1 then the current node is unbalanced in a left left case or a left right case; to check whether it is left left case or not, compare the newly inserted key with the key in left subtree root
+                if balance factor < - 1, then the current node is unbalanced in a right right case or right left case; to check whether it is right right case or not, compare the newly inserted key with the key in right subtree root
+            
+            deletion in an avl tree: 
+                let w be the node to be deleted
+                perform standard bst deletion for w
+                starting from w, travel up and find the first unbalanced node
+                let z be the first unbalanced node, y be the larger height child of z, and x be the larger height child of y
+                re-balance the tree by performing appropriaterotations on the subtree rooted with z
+                there can be 4 possible cases that need to be handled similar to insertionthe insertion
+                note that unlike insertion, dixing node z will not fix the complete avl tree
+                after fixing z, ancestors of z may also need to be fixed
+            
+            outline of implementation of avl deletion: 
+                perform the normal bst deletion
+                the current node must be 1 of the ancestors of the deleted node; update the height of the current node
+                get the balance factor (left subtree height - right subtree height) of the current node
+                if balance factor > 1 then the current node is unbalanced in a left left case or a left right case; to check whether it is left left case or left right case, get the balance factor of left subtree; if the balance factor of the left subtree >= 0 then it is left left case, else left right case
+                if balance factor < - 1, then the current node is unbalanced in a right right case or right left case; to check whether it is right right case or right left case, get the balance factor of right subtree, if the balance factor of the right subtree <= 0 then it is right right case, else right left case
+            
+            pseudocode: 
+                node: 
+                    node(d): 
+                        key = d
+                        height = 1
+                        left = right = null
+                
+                // height of tree rooted with node n
+                height(n): 
+                    if n == null: 
+                        return 0
+                    return n.height
+                
+                rightRotate(y): 
+                    x = y.left
+                    t = x.right
+                    x.right = y
+                    y.left = t
+                    
+                    y.height = max(height(y.left), height(y.right)) + 1
+                    x.height = max(height(x.left), height(x.right)) + 1
+                    
+                    return x
+                
+                leftRotate(x): 
+                    y = x.right
+                    t = y.left
+                    y.left = x
+                    x.right = t
+                    
+                    x.height = max(height(x.left), height(x.right)) + 1
+                    y.height = max(height(y.left), height(y.right)) + 1
+                    
+                    return y
+                
+                // balance factor of node n
+                getBalance(n): 
+                    if n == null: 
+                        return 0
+                    return height(n.left) - height(n.right)
+                
+                // given a non-empty bst, return the node with minimum key value found in that tree
+                min(n): 
+                    cur = n
+                    while cur.left != null: 
+                        cur = cur.left
+                    return cur
+                
+                insert(root, key): 
+                    // perform the normal bst insertion
+                    if root == null: 
+                        return node(key)
+                    
+                    if key < root.key: 
+                        root.left = insert(root.left, key)
+                    else if key > root.key: 
+                        root.right = insert(root.right, key)
+                    // duplicate keys not allowed
+                    else: 
+                        return root
+                    
+                    // update height of this ancestor node
+                    root.height = max(height(root.left), height(root.right)) + 1
+                    
+                    // get balance factor of this ancestor node to check if unbalanced
+                    balanec = getBalance(root)
+                    
+                    // if unbalanced, there are 4 possible cases: 
+                    
+                    // left left case
+                    if balance > 1 && key < root.left.key: 
+                        return rightRotate(root)
+                    
+                    // right right case
+                    if balance < -1 && key > root.right.key: 
+                        return leftRotate(root)
+                    
+                    // left right case
+                    if balance > 1 && key > root.left.key: 
+                        root.left = leftRotate(root.left)
+                        return rightRotate(root)
+                    
+                    // right left case
+                    if balance < -1 && key < root.right.key: 
+                        root.right = rightRotate(root.right)
+                        return leftRotate(root)
+                    
+                    return root
+                
+                delete(root, key): 
+                    // perform standard bst deletion
+                    if root == nullL 
+                        return root
+                    
+                    if key < root.key: 
+                        root.left = delete(root.left, key)
+                    else if key > root.key: 
+                        root.right = delete(root.right, key)
+                    // key is the same as root's key, then this is the node to be deleted
+                    else: 
+                        // one child or no child
+                        if root.left == null || root.right == null: 
+                            tmp = null
+                            if tmp == root.left: 
+                                tmp = root.right
+                            else: 
+                                tmp = root.left
+                            
+                            // no child case
+                            if tmp == null: 
+                                root = null
+                            else: 
+                                root = tmp
+                        else: 
+                            // two children: get inorder successor(smallest in the right subtree)
+                            tmp = min(root.right)
+                            root.key = tmp.key
+                            root.right = delete(root.right, tmp.key)
+                    
+                    if root == null: 
+                        return null
+                    
+                    // update height of the current node
+                    root.height = max(height(root.left), height(root.right)) + 1
+                    
+                    // get the balance factor of this node to check if unbalanced
+                    balance = getBalance(root)
+                    
+                    // if unbalanced, there are 4 possible cases: 
+                    
+                    // left left case
+                    if balance > 1 && getBalance(root.left) >= 0: 
+                        return rightRotate(root)
+                    
+                    // right right case
+                    if balance < -1 && getBalance(root.right) <= 0: 
+                        return leftRotate(root)
+                    
+                    // left right case: 
+                    if balance > 1 && getBalance(root.left) < 0: 
+                        root.left = leftRotate(root.left)
+                        return rightRotate(root)
+                    
+                    // right left case: 
+                    if balance < -1 && getBalance(root.right) > 0: 
+                        root.right = rightRotate(root.right)
+                        return leftRotate(root)
+                    
+                    return root
+        
+        red-black tree: 
+            a red-black tree is a self-balancing bst where every node follows the follwing rules: 
+                every node has a color either red or black
+                root of tree is always black
+                there are no two adjacent red nodes(a red node cannot have a red parent or a red child)
+                every path from root to a null node has the same number of black nodes
+            note: 
+                avl trees are more balanced compared to red-black trees, but avl trees may cause more rotations during insertion and deletion
+                thus if the application involves frequent insertions and deletions, then red-black trees should be preferred
+                and if the insertions and deletions are less frequent and searc is a more frequent operation,then avl tree should be preferred over red-black trees
+            
+            ensuring balance in a red-black tree: 
+                
+                black height of a red-black tree: 
+                    black height is the # of black nodes on a path from a node to a leaf
+                    leaf nodes are also counted as black nodes
+                    from the third and fourth properties of a red-black tree, it can be derived that a node of height h has black height >= h / 2
+                
+                every red-black tere with n nodes has height <= 2 * lg(n + 1): 
+                    for a general binary tree, let k be te minimum # of nodes on all root to null paths, then n >= 2 ** k - 1(e.g., if k == 3, n >= 7)
+                    this expression can also be written as k <= lg(n + 1)
+                    from the fourth property of red-black trees and the above claim, it can be derived that in a red-black tree with n nodes, there is a root to leaf path with at most lg(n + 1) black nodes
+                    from the third property of red-black trees, one can claim that the # of black nodes in a red-black tree is at least floor(n / 2) where n is the total # of nodes
+                    from the above 2 points, one can conclde the fact that a red-black tree with n nodes has height <= 2 * lg(n + 1)
+            
+            insertion in a red-black tree: 
+                first try recoloring, if recoloring does not work, then do rotations
+                let x be the newly inserted node
+                perform standart bst insertion and make the color of newly inserted node as red
+                if x is root, change color of x as black(black height of complete tree += 1)
+                do the following if color of x's parent is not black or x is not root: 
+                    if x's uncle is red(grandparent must have been black): 
+                        change color of parent and uncle as black
+                        change color of grandparent as red
+                        x = x's grandparent, repeat from last step(check if x is root)
+                    if x's uncle is black, then there can be 4 cases for x, x's parent(p) and x's grandparent(g)(similar to avl tree): 
+                        denote u as uncle of x, T1, T2, T3, T4, and T5 as subtrees
+                        
+                        left left case: 
+                            g(B) -> {p(R) -> {x(R) -> {T1, T2}, T3}, u(B) -> {T4, T5}}
+                                == right rotate g, swap colors of g and p ==> p(B) -> {x(R) -> {T1, T2}, g(R) -> {T3, u(B) -> {T4, T5}}}
+                        
+                        left right case: 
+                            g(B) -> {p(R) -> {T1, x(R) -> {T2, T3}}, u(B) -> {T4, T5}}
+                                == left rotate p ==> g(B) -> {x(R) -> {p(R) -> {T1, T2}, T3}, u(B) -> {T4, T5}}
+                                    == left left case ==> x(B) -> {p(R) -> {T1, T2}, g(R) -> {T3, u(B) -> {T4, T5}}}
+                        
+                        right right case: 
+                            g(B) -> {u(B) -> {T1, T2}, p(R) -> {T3, x(R) -> {T4, T5}}}
+                                == left rotate g, swap colors of g and p ==> p(B) -> {g(R) -> {u(B) -> {T1, T2}, T3}, x(R) -> {T4, T5}}
+                        
+                        right left case: 
+                            g(B) -> {u(B) -> {T1, T2}, p(R) -> {x(R) -> {T3, T4}, T5}}
+                                == right rotate p ==> g(B) -> {u(B) -> {T1, T2}, x(R) -> {T3, p(R) -> {T4, T5}}}
+                                    == right right case ==> x(B) -> {g(R) -> {u(B) -> {T1, T2}, T3}, p(R) -> {T4, T5}}
+        
+            the red-black tree may be overly complicated for implementation
+        
+        splay tree: 
+            a splay tree is a self-balancing bst that beings recently accessed item to the root of the tree so that the recently searched item becomes accessible in O(1) time
+            the idea is to use locality of reference as in a typical application, 80% of the access are to 20% of the items   
+            
+            splaying: 
+                there are 3 possible cases the node to be splayed can be in: 
+                    let x be the node to be splayed, p be the parent of x, and g be the parent of p
+                    let T1, T2, T3, and T4 be subtrees
+                    
+                    zig: 
+                        node is child of root
+                        
+                        left case: 
+                            p -> {x -> {T1, T2}, T3}
+                                == right rotation ==> x -> {T1, p -> {T2, T3}}
+                        
+                        right case: 
+                            p -> {T1, x -> {T2, T3}}
+                                == left rotation ==> x -> {p -> {T1, T2}, T3}
+                    
+                    zig-zig: 
+                        node is on the same side of parent as the parent is of the grandparent
+                        
+                        left left case: 
+                            g -> {p -> {x -> {T1, T2}, T3}, T4}
+                                == right rotate g ==> p -> {x -> {T1, T2}, g -> {T3, T4}}
+                                    == right rotate p ==> x -> {T1, p -> {T2, g -> {T3, T4}}}
+                        
+                        right right case: 
+                            g -> {T1, p -> {T2, x -> {T3, T4}}}
+                                == left rotate g ==> p -> {g -> {T1, T2}, x -> {T3, T4}}
+                                    == left rotate p ==> x -> {p -> {g -> {T1, T2}, T3}, T4}
+                    
+                    zig-zag: 
+                        node is on the opposite side of parent as the parent is of the grandparent
+                        
+                        left right case: 
+                            g -> {p -> {T1, x -> {T2, T3}}, T4}
+                                == left rotate p ==> g -> {x -> {p -> {T1, T2}, T3}, T4}
+                                    == right rotate g ==> x -> {p -> {T1, T2}, g -> {T3, T4}}
+                        
+                        right left case: 
+                            g -> {T1, p -> {x -> {T2, T3},T4}}
+                                == right rotate p ==> g -> {T1, x -> {T2, p -> {T3, T4}}}
+                                    == left rotate p ==> x -> {g -> {T1, T2}, p -> {T3, T4}}
+                
+                note: splaying not only brings the searched key to the root, but also balances the bst
+            
+            searching in a splay tree: 
+                do the stardard bst search
+                if the search is successful, then the node that is found is splayed and becomes the new root
+                else the last node accessed prior to reaching null is splayed and becomes the new root
+                if the accessed node is root, simply return the node, otherwise splay the node
+            
+            insertion in a splay tree: 
+                the insertion in a splay treeis similar toe th bst insertion with additional steps to make sure that the newly inserted key becomes the new root
+                
+                root is null: 
+                    allocate a new node and return it as root
+                
+                splay the given key k: 
+                    if k is alredy present then it becomes the new root
+                    if not present then the last accessed leaf node becomes the new root
+                
+                if the new root's key is the same as k: 
+                    do nothing as k is already present
+                
+                else create a new node and compare the root's key with k: 
+                    if k < the root's key, make the root the right child of the new node, copy the left child of the root as the left child of the new node and make the left child of the root null
+                    if k > the root'y key, make the root the left child of the new node, copy the right child of the root as the right child of the new node and make the right child of the root null
+                
+                return the new node as the new root of the tree
+            
+            deletion in a splay tree:
+                 
+                root is null: 
+                    return the root
+                
+                else splay the given key k: 
+                    if k is present then it becomes the new root
+                    if not present then the last accessed leaf node becomes the new root
+                
+                if the new root's key is not the same as k then return the root as k is not present
+                
+                else the key k is present: 
+                    split the tree into 2 trees t1 = the root's left subtree and t2 = the root's right subtree and delete the root node
+                    let the roots of t1 and t2 be r1 and r2 respectively
+                    if r1 == null return r2
+                    else splay the maximum node(node having maximum value) of t1
+                    after the splay procedure, make r2 the right child of r1 and return r1
+            
+            pseudocode: 
+                node: 
+                    node(k): 
+                        key = k
+                        left = right = null
+                
+                leftRotate(x): 
+                    y = x.right
+                    x.right = y.left
+                    y.left = x
+                    return y
+                
+                rightRotate(x): 
+                    y = x.left
+                    x.left = y.right
+                    y.right = x
+                    return y
+                
+                // this function brings the key to the root if key is present in the tree
+                // if the key is not present then it brings the last accessed item to the root
+                // this function modifies the tree and returns the new root
+                // this function also searches for the key and returns the last accessed leaf node if the key is not present
+                splay(root, key): 
+                    if root == null || root.key == key: 
+                        return root
+                    
+                    // key lies in the left subtree
+                    if root.key > key: 
+                        if root.left == null: 
+                            return root
+                        
+                        // zig-zig
+                        if root.left.key > key: 
+                            root.left.left = splay(root.left.left, key)
+                            root = rightRotate(root)
+                        // zig-zag
+                        else if root.left.key < key: 
+                            root.left.right = splay(root.left.right, key)
+                            if root.left.right != null: 
+                                root.left = leftRotate(root.left)
+                    // key lies in the right subtree
+                    else: 
+                        if root.right == null: 
+                            return root
+                        
+                        // zig-zig
+                        if root.right.key < key: 
+                            root.right.right = splay(root.right.right, key)
+                            root = leftRotate(root)
+                        // zig-zag
+                        else if root.right.key > key: 
+                            root.right.left = splay(root.right.left, key)
+                            if root.right.left != null: 
+                                root.right = rightRotate(root.right)
+                    
+                    return root.right == null ? root : leftRotate(root)
+                
+                insert(root, key): 
+                    if root == null: 
+                        return node(key)
+                    
+                    root = splay(root, k)
+                    if root.key == k: 
+                        return root
+                    
+                    n = node(key)
+                    if root.key > key: 
+                        n.right = root
+                        n.left = root.left
+                        root.left = null
+                    else: 
+                        n.left = root
+                        n.right = root.right
+                        root.right = null
+                    
+                    return n
+                
+                delete(root, key): 
+                    if root == null: 
+                        return root
+                    
+                    root = splay(root, key)
+                    if key != root.key: 
+                        return root
+                    
+                    if root.left == null: 
+                        root = root.right
+                    else: 
+                        tmp = root
+                        // here the maximum key in the left subtree of the root will be splayed
+                        // the resulting root will not have a right child
+                        root = splay(root.left, key)
+                        root.right = tmp.right
+                    
+                    return root
+    
+    interval tree: 
+        augmenting a self-balancing bst to maintain a set of intervals so that all operations below can be done in O(log N) time: 
+            adding an interval
+            removing an interval
+            given an interval x, find if x overlaps with any of the existing intervals
+    
+        every node of the interval tree stores the following information: 
+            i: an interval which is represented as a pair [low, high]
+            max: maximum high value in subtree rooted with this node
+        
+        the low value of an interval is used as key to maintain order in bst
+        the insertion and deletion are the same as insertion and deletion in the self-balancing bst used
+        
+        the main operation is to search for an overlapping interval, the following is an algorithm for searching an overlapping interval x in an interval tree rooted with root: 
+            if x overlaps with root's interval, return the root's interval
+            if left child of root is not empty and the max in the left child > x's low value, recur for the left child
+            else recur for the right child
+            
+            explanation: 
+                
+                when the right subtree is searched, 1 of the following must be true: 
+                    there is an overlap in the right subtree: fine as the algorithm needs to return 1 overlapping interval
+                    there is no overlap in either subtree: search the right subtree only when either the left is null or maximum value in left is smaller than x.low, thus the interval cannot be present in the left subtree
+                
+                when the left subtree is searched, 1 of the following must be true: 
+                    there is an overlap in the left subtree: fine as the algorithm needs to return 1 overlapping interval
+                    there is no overlap in either subtree: consider the following: 
+                        the left subtree is searched since x.low <= max in the left subtree
+                        max in the left subtree is a high of 1 of the intervals [a, max] in the left subtree
+                        since x does not overlap with any node in the left subtree, x.low must < a
+                        all nodes in the bst are ordered by low value, thus all nodes in the right subtree must have low values > a
+                        from the above 2 facts, it can be said that all intervals in the right subtree have low value > x.low, thus x cannot overlap with any interval in the right subtree
+        
+        pseudocode: 
+            // check if the given 2 intervals ovelap
+            overlap(i1, i2): 
+                if i1.low <= i2.high && i2.low <= i1.high: 
+                    return true
+                return false
+            
+            insert(root, i): 
+                // implementation of any self-balancing bst
+                
+                if root.max < i.high: 
+                    root.max = i.high
+                
+                return root
+            
+            overlapSearch(root, i): 
+                if root == null: 
+                    return null
+                
+                if overlap(root.i, i): 
+                    return root.i
+                
+                if root.left != null && root.left.max >= i.low: 
+                    return overlapSearch(root.left, i)
+                
+                return overlapSearch(root.right, i)
+    
+    skip list: 
+        time complexity for insertion, searching, and deletion: O(log N) on average, worst case O(N)
+        O(N) extra space
+        the worst case search time for a sorted linked list is O(N) one can only linearly traverse the list
+        skip list provides multiple layers that can skip nodes while operating on the list
+        
+        each element in the list is represented by a node, the level of the node is chosen randomly while inserting in thelist
+        note: level does not depend on the # of elements in the list
+        the level of a node is decided by the following algorithm: 
+            randomLevel(): 
+                lvl = 1
+                while random() < p && lvl < maxLvl: 
+                    lvl++
+                return lvl
+        maxLevel is the upper bound on the # of levels in the skip list
+        it can be determined as L(N) = log_(p / 2)(N)
+        the above algorithm assures that the random level will never > maxLevel
+        here p is the fraction of the nodes with level i pointers also having level i + 1 pointers
+        (2 commonly used values for p are 1 / 2 and 1 / 4)
+        
+        node structure: 
+            each node carries a key and a forward array carrying pointers to nodes of a different level
+            a level i node carries i forward pointers indexed through 0 to i
+        
+        insertion in a skip list: 
+            start from the highest level in the list and compare the key of the next node of the current level with the key to be inserted: 
+                if the key of the next node is less than the key to be inserted then keep on moving forward on the same level
+                if the key of the next node is greater than the key to be inserted then store the pointer to current node i at update[i] and move 1 level down and continue searching
+            at level 0, a position to insert the given key is guaranteed
+        
+        searching in a skip list: 
+            similar to finding a spot to insert an element into the skip list
+        
+        deletion in a skip list: 
+            deletion of an element k is preceded by locating the element in the skip list by first searching for the element
+            once the lement is located, rearrangement of pointers is fone to remove elemtn from list
+            start from the lowest level and do rearrangement until the element next to update[i] is not k
+            after deletion of element there could be levels with no elements, thus remove these levels as well by decrementing the level of skip list
+        
+        pseudocode: 
+            node: 
+                node(k, level): 
+                    key = k
+                    forward = [null] * (level + 1)
+            
+            skiplist: 
+                skiplist(maxLvl, p): 
+                    this.maxLvl = maxLvl
+                    this.p = p
+                    lvl = 0
+                    head = node(-1, maxLvl)
+                
+                randomLvl(): 
+                    r = random()
+                    level = 0
+                    while r < p && level < maxLvl: 
+                        level++
+                        r = random()
+                    return level
+                
+                insert(key): 
+                    cur = head
+                    update = [null] * (maxLvl + 1)
+                    
+                    // start from the highest level of the skip list
+                    // move the current pointer forward while the key is greater than the key of the node next to the current node
+                    // otherwise insert current node in update and move 1 level down and continue searching
+                    for i = (lvl -> 0): 
+                        while cur.forward[i] != null && cur.forward[i].key < key: 
+                            cur = cur.forward[i]
+                        update[i] = cur
+                        
+                    // reached level 0 and forward pointer points to the desired position to insert key
+                    cur = cur.forward[0]
+                    
+                    // if current is null which means the end of the level is reached or if current's key is not equal to the key to insert
+                    // then insert the node between update[0] and the current node
+                    if cur == null || cur.key != key: 
+                        level = randomLvl()
+                        
+                        // if random level is greater than the list's current level(node with highest level inserted in list so far)
+                        // initialize update value with pointer to header for further use
+                        if level > lvl: 
+                            for i = (lvl + 1 -> level): 
+                                update[i] = head
+                            // update the list's current level
+                            lvl = level
+                        
+                        n = node(key, level)
+                        
+                        // insert node by rearranging pointers
+                        for i = (0 -> level): 
+                            n.forward[i] = update[i].forward[i]
+                            update[i].forward[i] = n
+                
+                delete(key): 
+                    cur = head
+                    update = [null] * (maxLvl + 1)
+                    
+                    // start from the highest level of the skip list
+                    // move the current pointer forward while the key is greater than the key of the node next to the current node
+                    // otherwise insert current node in update and move 1 level down and continue searching
+                    for i = (lvl -> 0): 
+                        while cur.forward[i] != null && cur.forward[i].key < key: 
+                            cur = cur.forward[i]
+                        update[i] = cur
+                    
+                    // reached level 0 and forward pointer points to possibly the desired node
+                    cur = cur.forward[0]
+                    
+                    // if current node is target node
+                    if cur != null && cur.key == key: 
+                        // start from loewst level and rearrange pointers as in singly linked lists to remove target node
+                        for i = (0 -> lvl): 
+                            // if at level i the next node is not the target node, then the node cannot be in any higher level thus break the loop
+                            if update[i].forward[i] != cur: 
+                                break;
+                            update[i].forward[i] = cur.forward[i]
+                        
+                        // remove levels having no elements
+                        while lvl > 0 && head.forward[lvl] == 0: 
+                            lvl--
+                
+                search(key): 
+                    cur = head
+                    
+                    // start from the highest level of the skip list
+                    // move the current pointer forward while the key is greater than the key of the node next to the current node
+                    // otherwise insert current node in update and move 1 level down and continue searching
+                    for int i = (lvl -> 0): 
+                        while cur.forward[i] != null && cur.forward[i].key < key: 
+                            cur = cur.forward[i]
+                    
+                    // reached level 0 and the forward pointer points to possibly the desired node
+                    cur = cur.forward[0]
+                    
+                    // if current node has key equal to the search key, the target node is found
+                    if cur != null && cur.key == key: 
+                        return cur
+    
+    trie: 
+        also called a prefix tree
+        a trie is an ordered tree data structure used to store a dynamic set or associative array(key-value pairs) where the keys are usually strings
+        there are no collisions of different keys in a trie
+        a trie can provide an alphabetical ordering of the entries by key
+        
+        pseudocode: 
+            n = alphabet size
+            
+            node: 
+                end = false
+                children = [null] * n
+            
+            insert(key): 
+                l = len(key)
+                p = root
+                for lvl = (0 -> l - 1): 
+                    i = key[lvl]
+                    if p.children[i] == null: 
+                        p.children[i] = node()
+                    p = p.chlidren[i]
+                p.end = true
+            
+            search(key): 
+                l = len(key)
+                p = root
+                for lvl = (0 -> l - 1): 
+                    i = key[lvl]
+                    if p.children[i] == null: 
+                        return false
+                    p = p.children[i]
+                return true
+
+
+
+square root(sqrt) decomposition technique: 
+    1 of the most common query optimization techinques
+    helps reduce the time complexity by a factor of sqrt(N)
+    the key concept of this technique is to decompose the given array into small chunks specifically of size sqrt(N)
+    
+    for a problem that asks certain queries asking for the answer for the elements in range i to j in the original N-sized array, 
+    first decompose the array into small chunks of size sqrt(N) and precompute the answer to the problem for each block
+    next for each query, combine the answers in of the chunks that lie between i and j in the original array, then iterate through the chunks that only partially overlap with the given range
+    the time complexity for each query is then O(sqrt(N))(at most sqrt(N) blocks lie inside the range) + 2 * O(sqrt(N))(at most 2 edge chunks, each having at most sqrt(N) elements) == O(sqrt(N))
+    thus the sqrt decomposition technique reduces the time complexity for each query from O(N)(the naive approach of iterating through the entire range from i to j) to O(sqrt(N))
+    
+    update query(point update): 
+        simply find the block in which the given index lies, then update the value for the block
+        O(1) for sum / xor / etc., O(N) for min / max / etc.
+    
+    exmaple: range minimum query
+        for a given array a[0 : n], efficiently find the minimum value from index i to j
+        
+        preprocessing: 
+            using the sqrt decomposition technique, first divide range [0, n - 1] into different blocks of at most sqrt(n) elements each
+            compute the minimum of every block and store the results
+            
+            preprocessing takes O(sqrt(n) * sqrt(n)) == O(n) time and O(sqrt(n)) space
+        
+        query: 
+            to query a range [i, j], take the minimum of all blocks that lie in this range, taking O(sqrt(n)) time
+            there can be at most two corner blocks that may need scanning, taking O(2 * sqrt(n)) time
+            
+            thus each query runs in O(sqrt(n)) time
+
+sparse table algorithm: 
+    the sparse table concept is used for fast queries on a set of static data
+    suitable for binary operations that are associative and yield the same result for multiple of the same items(overlapping range): 
+        *(a, b) == *(*(a, a), b)
+        e.g., min, max, gcd, lcm, etc.
+    for rmq, while sqrt decomposition requires only O(sqrt(N)) space, it takes O(sqrt(N)) time for each query
+    the sparse table algorithm supports query time O(1) with extra space O(N log N)
+    
+    the idea is to precompute the minimum of all subarrays of size 2 ** j where j varies from 0 to lg(N)
+    make a table lookup[i][j] such that lookup[i][j] contains the minimum of range starting from i and of size 2 ** j
+    
+    filling the sparse table: 
+        fill in bottom up using previously computed values
+        lookup[i][0] = a[i]
+        if lookup[i][j - 1] <= lookup[i + 2 ** (j - 1)][j - 1]
+            lookup[i][j] = lookup[i][j - 1]
+        else: 
+            lookup[i][j] = lookup[i + 2 ** (j - 1)][j - 1]
+    
+    for any arbitrary range [l, r[, use ranges which are in powers of 2
+    the idea is to use the closest power of 2
+    at most 1 comparison i sneeded(compare the minimum of 2 ranges which have sizes of powers of 2)
+    1 range starts with l and ends at l + (closest power of 2), and the other range ends at r and starts at r - (closest power of 2) + 1
+    thus: 
+        j = floor(lg(r - l + 1))
+        if lookup[l][j] <= lookup[r - 2 ** j + 1][j]: 
+            min(l, r) = lookup[l][j]
+        else: 
+            min(l, r) = lookup[r - 2 ** j + 1][j]
+    
+    pseudocode(rmq): 
+        lg(x): 
+            ans = 0
+            while x >>= 1 > 0: 
+                ans++
+            return ans
+        
+        build(a, n): 
+            for i = (0 -> n - 1): 
+                lookup[i][0] = a[i]
+            for j = 1, (1 << j) <= n, j++: 
+                for i = 0, (i + (1 << j) - 1) < n, i++: 
+                    lookup[i][j] = min(lookup[i][j - 1], lookup[i + (1 << (j - 1))][j - 1])
+        
+        query(l, r): 
+            j = lg(r - l + 1)
+            return min(lookup[l][j], lookup[r - (1 << j) + 1)][j])
+
+heavy light decomposition(hld) technique: 
+    reduces the change operation from O(N) time to O(log N) time
+    reduces the maxEdge operation from O(N) time to O(log ** 2 N) time
+    given an unbalanced tree(not necessarily a binary tree) of n nodes, and the following types of queries are to be answered: 
+        change(a, b): update the weight of the a-th edge to b
+        maxEdge(a, b): return the maximum edge weight on the path from node a to node b
+    
+    assume that the nodes are numbered from 1 to n
+    there must be n - 1 edges
+    edge weights are natural numbers
+    
+    hld solution: 
+        a segment tree can be used to perform both types of queries in O(log N) time
+        however a segment tree can only be built from a 1-d array while the current situation requires a segment tree for a tree
+        thus reduce the tree to chains: 
+            let the size of a node x be the # of nodes in the subtree rooted with the node x
+            hld of a rooted tree is a method of decomposing the nodes of the tree into disjoint chains to achieve important asymptotic time bounds for certain problems involving trees
+            the "heavy-light" comes from the way hld segregates edges: use the size of the subtrees at the rooted nodes as the criteria
+            an edge is heavy if size(v) > size(u) where u is any sibling of v
+            if they are equal, pick any 1 such v as special
+        
+        change(u, v): 
+            since the segment tree is used as the underlying data structure to represent individual chains, change is done using update of segment tree
+            thus the time complexity of the change operation is O(log N)
+        
+        maxEdge(u, v): 
+            first find the lca of the 2 nodes
+            crawl up the tree from the node u to the lca
+            if node u and lca belong to the same chain, find the maximum from the range that represents the edges between them using segment tree
+            else find the maximum from the chain to which u belongs, then change chains and repeat while not in the same chain
+            repeat the same crawling step from v to lca and return the maximum of the 2 weights
+            since querying the maximum edge weight of a chain takes O(log N) time as chains are represented using segment tree and there are at most O(log N) chains, the time complexity for the max edge operation is O(log ** 2 N)
+    
+    outline: 
+        
+        tree creation: 
+            use adj matrix representation or adj list representation of the tree
+        
+        setting up the subtree size, depth and parent for each node: 
+            do dfs on the tree to set up arrays that store parent, subtree size, and depth of each node
+            also store the deeper node of every edge traversed
+        
+        decomposing the tree into disjoin chains and building the segment tree: 
+            as the edges are traversed and the nodes are reached(starting from the root), place the edge in the segment tree base
+            decide if the node will be a head to a new chain(normal child) or will the current chain extend(special child)
+            store the chain id to which the node belongs
+            store its place in the segment tree base
+            the base of the segment tree is built such that all edges belonging to the same chain are together, and chains are separated by light edges
+        
+        change query: 
+            update the segment tree by using the deeper end of the edge whose weight is to be updated
+            the position of the deeper end of the edge in the array acts as the base to the segment tree
+            start the update from that node and move upwards updating the segment tree
+    
+    pseudocode(adj matrix, binary tree(since array representation of seg tree)): 
+        node: 
+            // pos = position in the segment tree base
+            parent, depth, size, pos, chain
+        
+        edge: 
+            weight, deeperEnd
+        
+        tree: 
+            // tree has length 2 * N
+            base, tree
+        
+        // e = edge id
+        // u, v = nodes
+        // w = weight
+        addEdge(e, u, v, w): 
+            tree[u - 1][v - 1] = e - 1
+            tree[v - 1][u - 1] = e - 1
+            edge[e - 1].weight = w
+        
+        // a recursive function for dfs on the tree
+        // cur = current node
+        // prev = parent of cur
+        // dep = depth
+        dfs(cur, prev, dep, n): 
+            node[cur].parent = prev
+            node[cur].depth = dep
+            node[cur].size = 1
+            
+            // for node's every child
+            for j = (0 -> n - 1): 
+                if j != cur && j != node[cur].parent && tree[cur][j] != -1: 
+                    edge[tree[cur][j]].deeperEnd = j
+                    dfs(j, cur, dep + 1, n)
+                    node[cur].size += node[j].size
+        
+        // a recursive function that decoposes the tree into chains
+        hld(cur, id, edgeCnt, curChain, n, head): 
+            // if the current chain has no head, this node is the first node and the head
+            if head[curChain] == -1: 
+                head[curChain] = cur
+            
+            node[cur].chain = curChain
+            node[curNode].pos = edgeCnt
+            s.base[edgeCnt++] = edge[id].weight
+            
+            // find special child
+            spChild = -1
+            for j = (0 -> n - 1): 
+                if j != cur && j != node[cur].parent && tree[cur][j] != -1: 
+                    if spChild == -1 || node[spChild].size < node[j].size: 
+                        spChild = j
+                        spEdgeId = tree[cur][j]
+            
+            // if special child found, extend chain
+            if spChild != -1: 
+                hld(spChild, spEdgeId, edgeCnt, curChain, n, head)
+            
+            // for every other normal child, do hld on child subtree as a separate chain
+            for j = (0 -> n - 1): 
+                if j != cur && j != node[cur].parent && tree[cur][j] != -1: 
+                    curChain++
+                    hld(j, tree[curNode][j], edgeCnt, curChain, n, head)
+        
+        // a recursive function that constructs segment tree for array [s, ..., e)
+        // i is index of current node in segment tree st
+        constructSt(s, e, i): 
+            // if there is only 1 element in array, store it in the current node of segment tree and return
+            if s == e - 1: 
+                s.tree[i] = s.base[s]
+                return s.base[s]
+            
+            // if there are more than 1 element, recur for left and right subtrees and store the maximum of 2 values in this node
+            m = (s + e) / 2
+            s.tree[i] = max(constructSt(s, m, i << 1), constructSt(m, e, i << 1 | 1))
+            return s.tree[i]
+        
+        // a recursive function that updates the segment tree
+        // x = node to be updated to value v
+        // i = the starting index of the segment tree
+        // s, e = the corners of the range represented by i
+        updateSt(s, e, i, x, v): 
+            if s > x || e <= x: 
+                do nothing
+            else if s == x && s == e - 1: 
+                s.tree[i] = v
+            else: 
+                m = (s + e) / 2
+                s.tree[i] = max(updateSt(s, m, i << 1, x, v), updateSt(m, s, i << 1 | 1, x, v))
+            
+            return s.tree[i]
+        
+        // update edge e's value to v in segment tree
+        change(e, v, n): 
+            updateSt(0, n, 1, node[edge[e].deeperEnd].pos, v)
+        
+        // get the lca of nodes u and v
+        lca(u, v, n): 
+            if node[u].depth < node[v].depth: 
+                swap(u, v)
+            
+            // aux stores path from node u to root
+            fill(aux, false)
+            
+            while u != -1: 
+                aux[u] = true
+                u = node[u].parent
+            
+            // find first node common in path from v to root and u to root using aux
+            while v != -1: 
+                if aux[v]: 
+                    break
+                v = node[v].parent
+            
+            return v
+        
+        // a recursive function to get the maximum value in a given range of array indices
+        // index = index of current node in the segment tree
+        // s, e = starting and ending indices of the segment represented by the current node
+        // qs, qe = starting and ending indices of query range
+        rmq_r(s, e, qs, qe, index): 
+            if qs <= s && qe >= e - 1: 
+                return s.tree[index]
+            
+            if e - 1 < s || s > e: 
+                return -1
+            
+            m = (s + e) / 2
+            return max(rmq_r(s, m, qs, qe, index << 1), rmq_r(m, e, qs, qe, index << 1 | 1))
+        
+        // returns the maximum of elements in range from index qs to qe
+        rmq(qs, qe, n): 
+            // erroneous input
+            if qs < 0 || qe >= n || qs > qe: 
+                return -1
+            return rmq_r(0, n, qs, qe, 1)
+        
+        // a function to move from u to v keeping track of the maximum
+        crawl(u, v, n, head): 
+            chainV = node[v].chain
+            ans = 0
+            
+            while true: 
+                chainU = node[u].chain
+                
+                // if the 2 nodes belong to the same chain, query between their positions in the array acting as the base to the segment tree
+                if chainU == chainV: 
+                    if u == v: 
+                        do nothing
+                    else: 
+                        ans = max(ans, rmq(node[v].pos + 1, node[u].pos, n))
+                    break
+                // else query between node u and the head of the chain to which u belongs and later change u to the parent head of the chain to which u belongs
+                else: 
+                    ans = max(ans, rmq(node[head[chainU]].pos, node[u].pos, n))
+                    u = node[head[chainU]].parent
+            
+            return ans
+        
+        // max edge query
+        maxEdge(u, v, n, head): 
+            lca = lca(u, v, n)
+            ans = max(crawl(u, lca, n, head), crawl(v, lca, n, head))
+            return ans
+
+
+
+binary search: 
     find position of target value in a sorted array
+    
     pseudocode: 
         binarySearch(a, n, t): 
             l = 0
@@ -13,19 +1485,137 @@
                 else: 
                     return m
             return -1
+    
+    pseudocode for finding largest k such that a condition is met: 
+        l = 0
+        r = n - 1
+        while l < r: 
+            m = (l + r + 1) / 2
+            if conditional(m): 
+                l = m
+            else: 
+                r = m - 1
+        k = l
 
-dp: 
-    exponential -> polynomial
-    dfs -> dp
-    4 elements:
-        state: what dp[i][j] stands for
-        function: formula for dp[i][j]
-        initialization
-        answer: where
 
-iterative deepening dfs: 
+
+dynamic programming(dp): 
+    a greedy algorithm is used to solve a problem with optimal substructure if it can be proved by induction that this is optimal at each step
+    otherwise, provided the problem exhibits overlapping subproblems as well, dynamic programming is used
+    a problem is said to have overlapping subproblems if: 
+        the problem can be broken down into subproblems which are reused several times or 
+        a recursive algorithm for the problem solves the same subproblem over and over rather than always generating new subproblems
+    the key to dp is to define the state and find the state transition: 
+        first determine the state such that it clearly describes the subproblem
+        next determine the states at the bottom level, usually the simplest cases or the edge cases
+        then determine from which states can a state be transitted from while also considering the order to ensure that the subproblem is already solved
+    
+    examples: 
+        
+        integer knapsack(multiple instances of the same type of item allowed):
+            time complexity: O(C * n)
+            space complexity: O(C)
+            given: 
+                n types of items: 
+                    size s_i
+                    value v_i
+                knapsack capacity C
+            maximize the total value
+            let M(j) = max value one can pack into a knapsack of capacity j
+            M(j) = max(M(j - 1), max(M(j - s_i) + v_i ∀i))
+            ans = M(C)
+        
+        integer knapsack(0 / 1 or no duplicate items): 
+            time complexity: O(C * n)
+            space complexity: O(C * n)(O(C) if only the value of the optimal solution is desired)
+            given: 
+                n types of items: 
+                    size s_i
+                    value v_i
+                knapsack capacity C
+            maximize the total value
+            let M(i, j) = the optimal value for filling exactly a knapsack of capacity j with some subset of items 0, ..., i
+            M(i, j) = max(M(i - 1, j), M(i - 1, j - s_i) + v_i)
+            ans = max(M(n, j) ∀j)
+            to acquire the set of items used, keep the entire table and record back pointers
+        
+        longest increasing subsequence(lis): 
+            time complexity: O(n ** 2)
+            note that there is an O(n log n) solution to this problem
+            given: 
+                sequence A[0], ..., A[n - 1]
+            find longest increasing subsequence(not necessarily contiguous)
+            let L(j) = longest strictly increasing subsequence ending at position j
+            L(j) = max(L(i) ∀i ∋ i < j, A[i] < A[j])
+            ans = max(L(j) ∀j)
+        
+        maximum value contiguous subsequence: 
+            time complexity: O(n)
+            given: 
+                sequence A[0], ..., A[n - 1]
+            find longest contiguous subsequence that yields the maximum sum
+            let M(j) = max sum over all windows ending at j
+            M(j) = max(M(j - 1) + A[j], A[j])
+            ans = max(M(j) ∀j)
+        
+        balanced partition: 
+            time complexity: O(k * n ** 2)
+            given: 
+                n integers in range [0, k] A[0], ..., A[n - 1]
+            partition the given integers into subsets S_1 and S_2 such that |Σ(S_1) - Σ(S_2)| is minimized
+            let P(i, j) = { 1   if some subset {A[0], ..., A[i]} has a sum of j
+                          { 0   otherwise
+            P(i, j) = max(P(i - 1, j), P(i - 1, j - A[i]))
+            let S = Σ(A) / 2
+            ans = 2 * min(S - i ∀i <= S, P(n, i) == 1)
+            to acquire the partition, record back pointers
+        
+        edit distance: 
+            time complexity: O(n * m)
+            given: 
+                strings A of length n and B of length m
+                costs c_i for inserting a character, c_d for deleting a character, and c_r for replacing a character
+            compute the minimum cost of transforming A into B with insertions, deletions and replacements
+            let T(i, j) = minimum cost of transforming A[:i] to B[:j]
+            T(i, j) = min(T(i - 1, j) + c_d, T(i, j - 1) + c_i, T(i - 1, j - 1) if A[i] == B[j] else T(i - 1, j - 1) + c_r)
+            ans = T(n, m)
+            take special care of the order of the transitions
+        
+        counting boolean parenthesizations: 
+            time complexity: O(n ** 3)
+            given: 
+                a boolean expression with n symbols(true / false) and (n - 1) operands(and / or / xor)
+            find the # of ways to parenthesize the expression such that it evaluates to true
+            let T(i, j) = the # of ways to parenthesize symbols i, ..., j such that this subexpression evaluates to true, 
+                F(i, j) = the # of ways to parenthesize symbols i, ..., j such that this subexpression evaluates to false
+            base case: T(i, i) = 1 if symbol[i] else 0, F(i, i) = 0 if symbol[i] else 1
+            T(i, i + 1) = Σ(k = (i -> j - 1))({ T(i, k) * T(k + 1, j)                                                       if operand between symbol k and k + 1 is and
+                                              { (T(i, k) + F(i, k)) * (T(k + 1, j) + F(k + 1, j)) - F(i, k) * F(k + 1, j)   if operand between symbol k and k + 1 is or
+                                              { T(i, k) * F(k + 1, j) + F(i, k) * T(k + 1, j)                               if operand between symbol k and k + 1 is xor)
+            F(i, i + 1) = Σ(k = (i -> j - 1))({ (T(i, k) + F(i, k)) * (T(k + 1, j) + F(k + 1, j)) - T(i, k) * T(k + 1, j)   if operand between symbol k and k + 1 is and
+                                              { F(i, k) * F(k + 1, j)                                                       if operand between symbol k and k + 1 is or
+                                              { T(i, k) * T(k + 1, j) + F(i, k) * F(k + 1, j)                               if operand between symbol k and k + 1 is xor)
+            note: for any interval from i to j, all the possible parenthesizations essentially come down to: 
+                splitting [i, j] into [i, k] and [k + 1, j], putting parentheses around both intervals then evaluate the operand in the middle
+                thus the transition takes in account every possible k
+            ans = T(0, n - 1)
+        
+        optimal strategy for a game: 
+            time complexity: O(n ** 2)
+            given: 
+                a row of n(even) coins of values v[0], ..., v[n - 1]
+            maximize the value of coins selected if the player and the opponent selects a coin from either end of the row alternately, starting from the player
+            let V(i, j) = max value that can be won against a perfect opponent if it is currently the player's turn and only coins v[i], ..., v[j] remain
+            base case: V(i, i) = v[i], V(i, i + 1) = max(v[i], v[i + 1])
+            V(i, j) = max(min(V(i + 1, j - 1), V(i + 2, j)) + v[i], min(V(i, j - 2), V(i + 1, j - 1)) + v[j])
+            ans = V(0, n - 1)
+
+
+
+iterative deepening dfs(dfsid): 
     essentially dfs in bfs
     dfsid calls dfs, restricting it from going beyond a given depth
+    
     pseudocode: 
         dfsid(src, target, maxDepth): 
             for limit = (0 -> maxDepth): 
@@ -43,41 +1633,419 @@ iterative deepening dfs:
                 if dls(src, target, limit - 1): 
                     return true
             return false
+    
     note that the nodes of maximum depth are visited once, the second last level are visited twice, and so on
     this is not as costly as the number of nodes in each level grows exponentially
 
+
+
+graph theory: 
+    unweighted graph / weighted graph
+    undirected graph / digraph
+    simple graph / multigraph(parallel edges allowed)
+    undirected graph is connected if there is a path from every node to every other node
+    component: maximal subset of nodes such that every node is reachable from every other node in the component
+    directed graph is strongly connected if there is a path from every node to every other node
+    strongly connected component: a node u and the collection of all nodes v of directed graph such that there is a path from u to v and from v to u
+    undirected graph is tree if contains no cycles and is connected
+    undirected graph is forest if contains no cycles
+    directed acyclic graph often referred to as a dag
+    graph is complete if there is an edge beween every pair of nodes
+    graph is bipartite if nodes can be split into 2 sets V1 and V2 such that there are no edges between 2 nodes of V1 or 2 nodes of V2
+    complete bipartite graph: every node in one set is connected to every node in the other
+    
+    subgraphs: 
+        G' = (V', E') is subgraph of G = (V, E) if V' is a subset of V and E' is a subset of E
+        subgraph of G induced by V' = (V', E') where E' consists of all the edges of E that are between members of V'
+    
+    data structure time complexities: 
+        N = # of nodes, M = # of edges, d_max = max degree of a node
+        edge list: 
+            space:              O(2 * M)
+            adj check:          O(M)
+            list of adj nodes:  O(M)
+            add edge:           O(1)
+            del edge:           O(M)
+            easy to code / debug
+            space efficient
+            determining edges incident to node, determining if 2 nodes are adjacent, and deleting edges(if location not known) are expensive
+            easy to extend to weighted / directed / multi- graphs
+        
+        adj matrix: 
+            space:              O(N ** 2)
+            adj check:          O(1)
+            list of adj nodes:  O(N)
+            add edge:           O(1)
+            del edge:           O(2)
+            symmetric for undirected graphs
+            much less space efficient for large, sparse graphs
+            unweighted simple graph: adj[i][j] = 1 if edge between i and j
+            weighted simple graph: adj[i][j] = weight[i][j]
+            unweighted multigraph: adj[i][j] = # of edges between i and j
+            weighted multigraph: hard to implement, n.b. for some network flow problems adding the weights of parallel edges is acceptable
+            undirected unweighted simple graph: the adj matrix raised to the k-th power gives the # of paths between each pair of nodes consisting of k edges
+            undirected graph: use hashmap where keys are pairs of vertices
+        
+        adj list: 
+            space:              O(2 * M)
+            adj check:          O(d_max)
+            list of adj nodes:  O(d_max)
+            add edge:           O(1)
+            del edge:           O(2 * d_max)
+            keep track of all edges incident to a given node
+            array of length N, the i-th entry being a list of edges incident to the i-th node
+            hard to code with unbounded # of edges incident to a node: lists must be linked lists(hard to debug) or dynamically allocated
+            cheap to find nodes adjacent to each node
+            determine if two nodes are adjacent: check all edges of one node
+            easy to add edge, hard to delete edge(if location not known)
+    
+    finding strongly connected components: 
+        
+        kosaraju's algorithm: 
+            time complexity: O(V + E)(adj list), O(V ** 2)(adj matrix)
+            
+            outline: 
+                for each node i of the graph, mark i as unvisited, let L be an empty ordered list of nodes
+                for each node i of the graph do visit(i), where visit(i) is the recursive subroutine: 
+                    if i is unvisited then
+                        mark i as visited
+                        for each out-neighbor j of i, do visit(j)
+                        prepend i to L
+                    otherwise do nothing
+                for each element i of L in order, do assign(i, i) where assign(i, root) is the recursive subroutine: 
+                    if i has not been assigned to a component then
+                        assign i as belonging to the componenet whose root is root
+                        for each in-neighbor j of i, do assign(j, root)
+                    otherwise do nothing
+                
+                trivial variations: 
+                    assign a component number to each node
+                    construct per-component lists of the nodes that belong to it
+                note: 
+                    for enumerating the in-neighbors of a node, construct a representation of the transposedgraph during the forward traversal phase
+        
+        tarjan's strongly connected component algorithm: 
+            time complexity: O(V + E)(adj list), O(V ** 2)(adj matrix)
+            
+            outline: 
+                each node v is assigned a unique integer v.index, which numbers the nodes consecutively in the order in which they are discovered
+                it also maintains a value v.lowLink that represents the smallest index of any node known to be reachable from v through its dfs subtree, including v itself
+                v is to be left on the stack if v.lowLink < v.index, whereas v is removed as the root of a strongly connected component if v.lowLink == v.index
+                v.lowLink is computed during the dfs search from v, as this finds the nodes that are reachable from v
+            
+            pseudocode: 
+                ind = 0
+                for each node i: 
+                    if index[i] == null: 
+                        strongConnect(i)
+                
+                strongConnect(i): 
+                    // set the depth index for i to the smallest unused index
+                    index[i] = ind
+                    lowLink[i] = ind
+                    ind++
+                    push i -> S
+                    onStack[i] = true
+                    
+                    // consider successors of i
+                    for each edge (i, j): 
+                        if index[j] == null: 
+                            // successor j has not yet been visited, recur on it
+                            strongConnect(j)
+                            lowLink[i] = min(lowLink[i], lowLink[j])
+                        else if onStack[j]: 
+                            // successor j is on stack S and hence in the current strongly connected component
+                            // if j is not on stack, then (i, j) is a croww-edge in the dfs tree and must be ignored
+                            // note: the next line uses index[j] not lowLink[j]; that is deliberate and from the original paper
+                            lowLink[i] = min(lowLink[i], index[j])
+                    
+                    // if i is a root node, pop the stack and generate a strongly connected component
+                    if i.lowLink == i.index: 
+                        start a new strongly connected component
+                        do: 
+                            pop S -> j
+                            onStack[j] = false
+                            add j to the current strongly connected component
+                        while j != i
+                        return the current strongly connected component
+                    else: 
+                        return null
+            
+            the notion of low(lowLink) and disc(index, "discovery time") values help to solve other graph problems like articulation point, bridge, and biconnected component: 
+                
+                articulation point / cut vertices: 
+                    a vertex in an undirected connected graph is an articulation point(or cut vertex) iff removing it(and edges through it) disconnects the graph
+                    for a disconnected undirected graph, an articulation point is a vertex removing which increases the number of connected components
+                    
+                    naive approach: 
+                        time complexity: O(V * (V + E))(adj list)
+                        a simple approach is to one by one remove all vertices and see if removal of a vertex causes disconnected graph
+                        
+                        outline: 
+                            for every vertex v, 
+                                remove v from graph
+                                see if the graph remains connected(bfs / dfs)
+                                add v back to the graph
+                    
+                    a linear algorithm: 
+                        time complexity: O(V + E)(adj list)
+                        use dfs
+                        in dfs, follow vertices in tree form called dfs tree
+                        in dfs tree, a vertex u is parent of another vertex v if v is discovered by u(u and v are adjacent in graph)
+                        in dfs tree, a vertex u is articulation point if one of the following two conditions is true: 
+                            u is root of dfs tree and it has >= 2 children
+                            u is not root of dfs treeand it has a child v such that no vertex in subtree rooted with v has a back edge to one of the ancestors(in dfs tree) of u
+                        
+                        pseudocode: 
+                            time = 0
+                            for each node i: 
+                                if !visited[i]: 
+                                    ap(i)
+                            
+                            ap(i): 
+                                children = 0
+                                visited[i] = true
+                                disc[i] = low[i] = ++time
+                                for each node j adjacent to i: 
+                                    // if j is not visited yet, then make it a child of i in dfs tree and recur for it
+                                    if !visited[j]: 
+                                        children++
+                                        parent[j] = i
+                                        ap(j)
+                                        
+                                        // check if the subtree rooted with j has a connection to one of the ancestors of i
+                                        low[i] = min(low[i], low[j])
+                                        
+                                        // i is an articulation point in follothe following cases: 
+                                        
+                                        // i is root of dfs tree and has 2 or more children
+                                        if parent[i] == null && children > 1: 
+                                            ap[i] = true
+                                        
+                                        // i is not root and low value of one of its child is more than discovery value of i
+                                        if parent[i] != null && low[j] >= disc[i]: 
+                                            ap[i] = true
+                                    // update low value for i for parent function calls
+                                    else if j != parent[i]: 
+                                        low[i] = min(low[i], disc[j])
+                
+                bridges in a graph: 
+                    an edge in an undirected connects graph is a bridge iff removing it disconnects the graph
+                    for a disconnected undirected graph, a bridge is an edge removing which increases the number of connected components
+                    
+                    naive approach: 
+                        time complexity: O(E * (V + E))(adj list)
+                        a simple approach is to one by one remove all edges and see if removal of an edge causes a disconnected graph
+                        
+                        outline: 
+                            for each edge (u, v), 
+                                remove (u, v) from graph
+                                see if the graph remains connected(bfs / dfs)
+                                add (u, v) back to the graph
+                    
+                    a linear algorithm: 
+                        time complexity: O(V + E)(adj list)
+                        do dfs
+                        in dfs tree an eddge (u, v)(u is parent of v in dfs tree) is bridge if there does not exist any other alternative to reach u or an ancestor of u from the subtree rooted with v
+                        the condition for an edge (u, v) to be a bridge is low[v] > disc[u]
+                        
+                        pseudocode: 
+                            time = 0
+                            for each node i: 
+                                if !visited[i]: 
+                                    bridge(i)
+                            
+                            bridge(i): 
+                                visited[i] = true
+                                disc[i] = low[i] = ++time
+                                for each node j adjacent to i: 
+                                    // if j is not visited yet, then make it achild of i in dfs tree and recur for it
+                                    if !visited[j]: 
+                                        parent[j] = i
+                                        bridge(j)
+                                        
+                                        // check if the subtree rooted with j has a connection to one of the ancestors of i
+                                        low[i] = min(low[i], low[j])
+                                        
+                                        // if the lowest vertex reachable from subtree under j is below i in dfs tree, then (i, j) is a bridge
+                                        if low[j] > disc[i]: 
+                                            bridge[i][j] = bridge[j][i] = true
+                                    // update low value of i for parent function calls
+                                    else if j != parent[i]: 
+                                        low[i] = min(low[i], disc[j])
+                
+                biconnected graph: 
+                    an undirected graph is called biconnected if there are two vertex-disjoint paths between any two vertices
+                    a connected graph is biconnected if it does not have any articulation points
+                    thus check: 
+                        the graph is connected
+                        there is no articulation points in graph
+                    do dfs
+                    in dfs traversal, check if there is any articulation point
+                    if there is no articulation point, then the graph is biconnected
+                    finally check if all vertices were reachable in dfs
+                    if all vertices were not reachable, then the graph is not even connected
+    
+    topological sort: 
+        time complexity: O(N)
+        a topological sort of a directed graph is a linear ordering of its vertices such that for every directed edge (u, v), u comes before v in the ordering
+        a topological ordering is possible iff the graph has no directed cycles, that is, if it is a directed acyclic graph(dag)
+        any dag has at least 1 topological ordering
+        
+        kahn's algorithm: 
+            L = empty list that will contain the sorted elements
+            S = set of all nodes with no incoming edge
+            while !s.empty(): 
+                remove S -> n
+                add n -> tail of L
+                for each node m with edge e from n to m: 
+                    remove edge e from graph
+                    if m has no other incoming edges: 
+                        add m -> S
+            if graph has edges: 
+                throw "graph has at least 1 cycle"
+            else: 
+                return L
+        
+        dfs: 
+            L = empty list that will contain the sorted nodes
+            while there are unmarked nodes: 
+                n = unmarked node
+                visit(n)
+            
+            visit(n): 
+                if n has permanent mark: 
+                    return
+                if n has temporary mark: 
+                    throw "not a dag"
+                mark n temporarily
+                for each node m with edge from n to m: 
+                    visit(m)
+                mark n permanently
+                add n -> head of L
+
+
+
 path finding: 
+    
     dijkstra's: 
-        O(V ** 2)
-        O(E log V) if use heap to determine next vertex to visit, 
-            but only appreciably faster on large, sparse graphs
+        time complexity: O(V ** 2)
+            (O(E log V) if use heap to determine next vertex to visit, 
+            but only appreciably faster on large, sparse graphs)
         does not work with negative weight edges
+        
         pseudocode:
             for all nodes i:
-                dist[i] = infinity
+                dist[i] = inf
                 visited[i] = false    // not reachable
                 parent[i] = null    // no path to vertex yet
             
-            dist[source] = 0
+            dist[src] = 0
             while nodesVisited < graphSize:
                 i = unvisited vertex closest to source
                 // to find such node i, keep all dist to source in an array(or node)
-                assert distance[i] != infinity, "graph not connected"
+                assert distance[i] != inf, "graph not connected"
                 visited[i] = true
                 
                 for all neighbors j of i:
                     if dist[i] + weight[i][j] < dist[j]:
                         dist[j] = dist[i] + weight[i][j]
                         parent[j] = i
+        
+        speed up techniques: 
+            
+            bidirectional search: 
+                let a reverse graph be a graph with the same node set V as that of the original graph, and the reverse edge set E' = {(u, v) | (v, u) ∈ E}
+                let dist_f[u] be distance labels of the forward search and dist_b[u] the labels of the backward search
+                algorithm can be terminated when one node has been designated to be permanent by both the forward and the backward algorithm
+                the shortest path is then determined by the node u with minimum value dist_f[u] + dist_b[u], note that u is not necessarily marked as permanent by both searches
+                degree of freedom: choice of whether a forward or a backward step is executed
+                common strategies: 
+                    choose the direction with the smaller priority queue
+                    choose the direction with the smaller minimal distance in the priority queue
+                    alternate the directions
+            
+            goal-directed search or a*: 
+                modify the priority of active nodes to change the order in which they are processed
+                add to the priority dist[u] a potential(heuristic) pt: V -> R0+ depending on the target t of the search
+                equivalently to modifying the priority, one can change the edge weight suth that the search is driven towards the target t
+                the weight of an edge (u, v) ∈ E is replaced by w'(u, v) = w(u, v) - pt(u) + pt(v)
+                the length of a s-v path P is then -pt(s) + pt(v) + w(P)
+                if all modified edge weights w'(u, v) are non-negative, it is possible to apply dijkstra's alforithm to the graph with modified edge weights w'
+    
+    bellman-ford: 
+        time complexity: O(V * E)
+        works with negative edges
+        detects negative cycles
+        while dijkstra's greedily selects the closest not yet processed vertex and relaxes all of its outgoing edges, bellman-ford simply relaxes all the edges V - 1 times
+        
+        pseudocode: 
+            for all nodes i: 
+                dist[i] = inf
+                parent[i] = null
+            
+            dist[src] = 0
+            for i = (1 -> V - 1): 
+                for each edge (i, j): 
+                    if dist[i] + weight[i][j] < dist[j]:    
+                        dist[j] = dist[i] + weight[i][j]
+                        parent[j] = i
+            
+            for each edge (i, j): 
+                if dist[i] + weight[i][j] < dist[j]: 
+                    throw "graph contains negative cycle"
+    
+    shortest path faster algorithm(spfa):
+        not proved to have an average runtime
+        for random graph, empirical average time complexity is O(E)
+        works well on random sparse graphs, particularly suitable for graphs containing negative-weight edges
+        improvement of bellman-ford, worst-case complexity is the same as bellman-ford
+        instead of relaxing vertices blindly, maintain a queue of candidate vertices and add a vertex to the queue only if that vertex is relaxed, repeat the process until no more vertex can be relaxed 
+        
+        pseudocode: 
+            for each node i: 
+                dist[i] = inf
+                
+            dist[src] = 0
+            offer s -> Q
+            while !Q.empty(): 
+                poll Q -> i
+                for each edge (i, j): 
+                    if dist[i] + weight[i][j] < dist[j]: 
+                        dist[j] = dist[i] + weight[i][j]
+                        if !(j in Q): 
+                            offer j -> Q
+                            // insert optimization
+        
+        if a priority queue is to be used, then the algorithm pretty much resembles dijkstra's
+        
+        optimizing to achieve a better average-case performance: 
+            Q becomes a normal doubly-linked list or doubly-ended queue
+            
+            small label first(slf):
+                instead of always pushing vertex v to the end of the queue, compare dist[v] to dist[front(Q)] and insert v to the front of the queue if dist[v] is smaller
+                pseudocode: 
+                    if dist[back(Q)] < dist[front(Q)]: 
+                        pop back(Q) -> i
+                        push i -> front(Q)
+            
+            large label last(lll): 
+                update the queue so that the first element is smaller than the average, and any element larger than the average is moved to the end of the queue
+                pseudocode: 
+                    x = avg(dist[i] for i in Q)
+                    while d[front(Q)] > x: 
+                        pop front(Q) -> i
+                        push i -> back(Q)
     
     floyd-warshall: 
-        O(V ** 3)
+        time complexity: O(V ** 3)
         finds length of shortest paths between all pairs of vertices
         works with negative weight edges(no negative cycles)
         requires adjacency matrix
-        dist[i][j] = weight[i][j] or infinity if no edge connects i and j
-        Ɐ pair (u, v), if ∃ w ∋ dist(u -> w -> v) < dist[u][v] then update dist[u][v]
+        dist[i][j] = weight[i][j] or inf if no edge connects i and j
+        ∀ pair (u, v), if ∃ w ∋ dist(u -> w -> v) < dist[u][v] then update dist[u][v]
         miraculously requires only 1 iteration if ordered properly
+        
         pseudocode: 
             // dist[i][j] = best known dist(i -> j) so far
             for i = (0 -> n - 1):
@@ -90,9 +2058,11 @@ path finding:
                     for j = (0 -> n - 1): 
                         if dist[i][k] + dist[k][j] < dist[i][j]: 
                             dist[i][j] = dist[i][k] + dist[k][j];
+        
         optimizations: 
             due to the symmetric nature of adjacency matrices of undirected graphs, only iterate through half of the matrix
             check if dist[i][k] is inf before proceeding to the j loop
+            
             pseudocode: 
                 for i = (0 -> n - 1):
                     for j = (0 -> n - 1):
@@ -111,18 +2081,22 @@ path finding:
         for unweighted graphs
         if V large E small, much faster than dijkstra's
 
-mst: 
+
+
+minimum spanning tree(mst): 
+    
     prim's: 
-        O(N ** 2)
+        time complexity: O(N ** 2)
         changing any element requires complete recalculation
         does not work with extra constraints(e.g. avg(dist) has to be low)
         works with multiple edges between 2 nodes
         does not extend to directed graphs
+        
         pseudocode: 
             // dist[j] = dist from tree to node j
             // src[j] = node of current mst closest to node j
             for all nodes i: 
-                dist[i] = infinity
+                dist[i] = inf
                 inTree[i] = false
                 src[i] = null
             
@@ -136,7 +2110,7 @@ mst:
             
             while treeSize < grashSize: 
                 i = node with minimum dist to tree
-                assert dist[i] != infinity, "graph not connected"
+                assert dist[i] != inf, "graph not connected"
                 
                 // add edge (src[i], i) to mst
                 treeSize++
@@ -149,11 +2123,15 @@ mst:
                         dist[j] = weight[i][j]
                         src[j] = i
 
+
+
 pattern searching: 
+    
     knuth morris pratt(kmp) algorithm: 
         preprocess pattern to construct auxiliary lps[] of same size as pattern
         lps[i] = longest proper prefix(!= the string itself) of pattern[0 : i] which is also a suffix of pattern[0 : i]
         e.g. "AAAA" -> [0, 1, 2, 3]; "AABAACAABAA" -> [0, 1, 0, 1, 2, 0, 1, 2, 3, 4, 5]
+        
         using lps to decide next positions: 
             start comparison with pattern[j] with j = 0 at current window of text
             keep incrementing i and j for matching characters text[i] and pattern[j]
@@ -164,10 +2142,11 @@ pattern searching:
                 also from the definition of lps: lps[j - 1] = count of characters of pattern[0 : j - 1] that are both proper prefix and suffix
                 conslusion: no need to match the lps[j - 1] characters text[i - j : i - 1] since they match(change only j to lps[j - 1])
             (also when pattern found, reset j to lps[j - 1] by the same reasoning)
+        
         pseudocode: 
             len = 0        // length of previous longest prefix suffix
-            i = 1
-            lps[0] = 0    // lps[0] is always 0
+            i = 0
+            lps[0] = 0     // lps[0] is always 0
             
             while i < len(pattern): 
                 if pattern[i] == pattern[len]: 
@@ -197,8 +2176,9 @@ pattern searching:
                         i++
 
 longest palindromic substring: 
+    
     manacher's algorithm: 
-        O(N)
+        time complexity: O(N)
         insert separators(any character not present in the string) at the start and the end of the string and between characters
         insert two additional distinct characters at each end of the string to avoid boundary checking
         let P[i] = radius of longest palindrome centered at i(i.e. the length of the palindrome is 2 * P[i] + 1, and the length of the palindrome in the original string is P[i])
@@ -206,6 +2186,7 @@ longest palindromic substring:
         by the symmetric nature of palindromes, let i' = 2 * C - i(i mirrored across C), if P[i'] <= R - i then P[i] = P[i']
         if P[i'] > R - i then expand past R to find P[i]
         if i + P[i] > R(palindrome centered at i extends beyond R), update C to i and R to i + P[i]
+        
         pseudocode: 
             preProcess(string s): 
                 n = len(s)
@@ -240,59 +2221,58 @@ longest palindromic substring:
                         centerIndex = i
                 return s[(centerIndex - 1 - maxLen) / 2, (centerIndex - 1 - maxLen) / 2 + maxLen]  
 
-binary trees: 
-    e.g. C -> {B -> {A, D -> {E, F}}, G -> H}
-    in-order traversal: 
-        left sub-tree, root, right sub-tree
-        e.g. ABEDFCHG
-    pre-order traversal: 
-        root, left sub-tree, right sub-tree
-        e.g. CBADEFGH
-    post-order traversal: 
-        left sub-tree, right sub-tree, root
-        e.g. AEFDBHGC              
+
 
 knapsack: 
     given a collection of objects with size and value and the total space available, 
         find the set of objects that maximizes the sum of the value of the set with 
         size constrainted by the limit, the total # or size of any particular item
         used in the set cannot exceed its availability
+    
     fractional knapsack: 
         allowed to place fractional objects in the knapsack
-        O(N log N) since must first sort by value to size ratio(O(N ** 2) without sorting)
+        time complexity: O(N log N) since must first sort by value to size ratio(O(N ** 2) without sorting)
         rare to have both size and availability
             (do trivial transmation to have all objects of size 1, have availability = original size * availability, 
             and divide the value by original size)
+        
         use greedy algorithm: 
             find the object with highest value to size ratio
             if total capacity remaining >= availability of object, put all in knapsack and iterate
             if total capacity remaining < availability of object, use as much as possible and terminate
+    
     integer knapsack: 
         solvable using dp if knapsack small enough: 
-            O(KN), K = size of knapsack, N = sum of availability of objects
+            time complexity: O(KN), K = size of knapsack, N = sum of availability of objects
             dp[i] = max value that a knapsack of size i can have
             update dp for an object of size S by traversing in reverse order and seeing if 
-                placing the objext into the knapsack of size K yields a better set than the 
+                placing the object into the knapsack of size K yields a better set than the 
                 current best knapsack of size K + S
         if knapsack too large to allocate array, use recursive descent since NP-complete
         if all sizes are same, solve greedily, picking the objects in decreasing value order until knapsack full
         if values are all 1, solve greedily, picking the objects in increasing size order until knapsack full
+    
     multiple knapsack: 
         more than 1 knapsack is to be filled(multiple integer knapsacks)
         state space is too large for dp, use recursive descent
         if values are all 1 && max # of objects that can be placed in all knapsacks is n, 
             then there is a solution which uses n smallest objects
-            
+
+
+       
 eulerian tour: 
-    O(m + n) (m = # of edges, n = # of nodes) if graph in adjacency matrix form
+    time complexity: O(m + n) (m = # of edges, n = # of nodes) if graph in adjacency matrix form
     given an undirected graph, find a path which uses every edge once
     eulerian circuit: starts and ends on the same vertex
+    
     a graph has an eulerian path: 
         iff connected
         iff every node except 2 has even degree(of the two odd degree nodes, one is start and the other is end)
+    
     a graph has an eulerian circuit:
         iff connected
         iff every node has even degree
+    
     pseudocode: 
         circuitPos = 0
         findCircuit(node 1)
@@ -307,10 +2287,50 @@ eulerian tour:
                     deleteEdges(i, j)
                     findCircuit(j)
                 circuit[circuitPos++] = i
+    
     to find eulerian tour, findCircuit(one of the odd degree nodes)
     may overflow runtime stack with larger graphs thus use own stack
     works for multple edges between the same nodes and self-loops(1 indegree + 1 outdegree)
     a directed graph has a eulerian circuit if strongly connected and indegree == outdegree for each node, except traverse the arcs in reverse order
+
+
+
+matrix multiplication: 
+    this section refers to square matrix multiplication
+    
+    naive approach: 
+        time complexity: O(N ** 3)
+        pseudocode: 
+            mul(a, b): 
+                for i = (0 -> N - 1): 
+                    for j = (0 -> N - 1): 
+                        for k = (0 -> N - 1): 
+                            ans[i][j] += a[i][k] * b[k][j]
+                            // optional modulus
+                            ans[i][j] %= mod
+                return ans
+    
+    strassen's: 
+        time complexity: O(N ** lg(7)) ~= O(N ** 2.8074)
+        note: 
+            the constants in strassen's method are large
+            for sparse matrices, there are better methods especially designed for them
+            submatrices in recursion take extra space
+            because of the limited precision of computer arithmetic on noninteger values, larger errors accumulate in strassen's algorithm than in naive method
+        divide and conquer: 
+            A × B = C
+            divide each matrix into 4 parts
+            p1 = a * (f - h)
+            p2 = (a + b) * h
+            p3 = (c + d) * e
+            p4 = d * (g - e)
+            p5 = (a + d) * (e + h)
+            p6 = (b - d) * (g + h)
+            p7 = (a - c) * (e + f)
+            [a b] × [e f] = [p5 + p4 - p2 + p6      p1 + p2             ]
+            [c d]   [g h]   [p3 + p4                p1 + p5 - p3 - p7   ]
+
+
 
 computational geometry: 
     dot product = |u||v|cos(theta)
@@ -319,22 +2339,28 @@ computational geometry:
     area of polygon = (1 / 2)|x1 x2 ... xn|
                              |y1 y2 ... yn| where the determinant = x1y2 + x2y3 + ... + xny1 - y1x2 - y2x3 - ... - ynx1
     dist from point to line d(P, AB) = |(P - A) x (B - A)| / |B - A|( = |AB||AP|sin(theta) / |AB| = |AP|sin(theta))
+    
     check if points C and D are on the same side of line AB(for 2 dimensions): 
         z((B - A) x (C - A)) * z((B - A) x (D - A)) > 0 => z value of cross products have same signs
         note that z(U x V) = UxVy - VxUy
+    
     check if a point A is in a triangle: 
         find point B which is in the triangle(e.g. average of the 3 vertices)
         check if A is on the same side as B for all 3 edges
         same works for convex polygons
+    
     check if a collection of points are coplanar: 
         select points A, B, and C
         the points are coplanar if for any other point D, the triple product of (B - A), (C - A), and (D - A) is 0
         (((B - A) x (C - A)) · (D - A) == 0)
+    
     check if 2 line segments are parallel: 
         create vectors and see if the cross product == 0
+    
     check if 2 lines intersect: 
         in 2 dimensions, two lines intersect if they are not parallel
         in 3 dimensions, two lines AB and CD intersect if they are not parallel and A, B, C, and D are coplanar
+    
     check if 2 line segments intersect: 
         in 2 dimensions, two line segments AB and CD intersect iff A and B are on opposite sides of line CD, while C and D are on opposite sides of line AB
         in 3 dimensions, solve for i and j in: 
@@ -342,23 +2368,29 @@ computational geometry:
             Ay + (By - Ay)i = Cy + (Dy - Cy)j
             Az + (Bz - Az)i = Cz + (Dz - Cz)j
             if 0 <= i, j <= 1, then they intersection is at (Ax + (Bx - Ax)i, Ay + (By - Ay)i, Az + (Bz - Az)i)
+    
     find intersection of 2 lines: 
         solve the above set of equations(discard the z equation for 2 dimensions)
         i = ((Cx - Ax) * (Dy - Cy) - (Cy - Ay) * (Dx - Cx)) / ((Bx - Ax) * (Dy - Cy) - (By - Ay) * (Dx - Cx)) = z((C - A) x (D - C)) / z((B - A) x (D - C))
+    
     check if a polygon is convex: 
         traverse the vertices in clock-wise order, for each triplet of consecutive points A, B, and C, 
         calculate (B - A) x (C - A)
         if the z component of each of the cross producs is positive, the polygon is convex
+    
     check if a point is within a nonconvex polygon: 
         make a ray from the point in a random direction and count the # of times it intersects the polygon
         if the ray intersects the polygon at a vertex or along an edge, pick a new direction
         the point is within the polygon iff the ray intersects the polygon an odd # of times
         this method extends to 3 dimsneions, but the ray can only intersect at faces
+    
     geometric methodologies: 
+        
         monte carlo: 
             random sampling for probability
             e.g. area of a figure: 
                 decide a bounding box and estimate the probability of hitting the figure at a random point
+        
         partitioning: 
             method to improve speed of a geometric algorithm
             divide the plane up into sections(usually by a grid, but sometimes into radial sections and etc.)
@@ -366,19 +2398,456 @@ computational geometry:
             e.g. searching for objects within some figure: 
                 only sections which have a nonzero intersection with the figure need to be examined
 
+
+
+group theory: 
+    
+    definitions: 
+        
+        cartesian product: 
+            a mathematical operation that returns a set from multiple sets
+            i.e., for sets A and B, the cartesian product A × B = {(a, b) | a ∈ A, b ∈ B}
+        
+        binary operation: 
+            a binary operation on a set S is a map which sends elements of the cartesian product S × S to S: 
+                f: S × S -> S
+                *(a, b) = a * b(a, b ∈ S)
+            properties: 
+                well-defined: ∀a, b ∈ S, ∃c ∈ S  a * b == c
+                closure: ∀a, b ∈ S, a * b ∈ S
+        
+        group: 
+            a group is a set G, together with a binary operation · that combines any 2 elements a and b to form another element, denoted a · b or ab
+            to qualify as a group, the set and the operation, (G, ·), must satisfy 4 requirements known as the group axioms: 
+                closure: ∀a, b ∈ G, a · b ∈ G
+                associativity: ∀a, b, c ∈ G, (a · b) · c == a · (b · c)
+                identity element: ∃e ∈ G ∋ ∀a ∈ G, e · a == a · e == a
+                inverse element: ∀a ∈ G, ∃b ∈ G ∋ a · b == b · a == e
+                note: 
+                    the identity element e of a group is unique: 
+                        suppose e and e' are both identity elements
+                        e == e · e' == e' · e == e'
+                        thus e == e', and the identity element of a group is unique
+                    a · b == b · a may not always hold true
+                    the inverse element of a is commonly denoted as a ** (-1)
+                    the inverse elements are unique: 
+                        suppose a has 2 inverse elements, b and c
+                        b == b · e == b · (a · c) == (b · a) · c == e · c == c
+                        thus b == c, and the inverse element of a is unique
+        
+        abelian group: 
+            also called a commutative group
+            a group in which the result of applying the group operation to two group elements does not depend on the order in which they are written
+        
+        bijection: 
+            a function between the elements of two sets, where each elementof one set is paired with exactly on element from the other set
+        
+        permutation: 
+            a permutation of a set S is a bijection from S to itself: 
+                f: S -> S
+        
+        symmetric group: 
+            the symmetric group defined over any set is the group whose elements are all the bijections from the set to itself, and whose group operation is the composition of functions
+            in particular, the finite symmetric group S_n defined over a finite set of n symbols consists of the permutation operations that can be performed on the n symbols
+            note: the elements of a symmetric group are maps
+        
+        subgroup: 
+            given a set G under a binary operation ·, a subset H of G is called a subgroup of G if H also forms a group under the operation ·
+            usually denoted as H <= G
+            the trivial subgroup of any group is the subgroup {e} consisting of just the identity element
+            a proper subgroup of a group G is a subgroup H which is a proper subset of G(i.e., H != G)
+                usually denoted as H < G
+        
+        order: 
+            given a group G, a ∈ G, if ∃n ∈ N* ∋ a ** n == e, a ** k != e ∀k ∋ 0 < k < n, then a has an order of n
+            if no such n exists, then a is said to have infinite order
+            denoted by ord(a) or |a|
+        
+        cyclic group: 
+            also called a monogenous group
+            a group that is generated by a single element
+            i.e., let G be a group, if ∃g ∋ G = {g ** n | n ∈ Z}, then G is said to be a cyclic group
+            each element can be written as a power of g in multiplicative notation
+            this element g is called a generator of the group
+        
+        group homomorphism: 
+            given two groups, (G, *) and (H, ·), a group homomorphism from (G, *) to (H, ·) is a function h: G -> H such that for all u and v in G, h(u * v) == h(u) · h(v)
+            e.g., consider GL(n, R), the set of n * n invertible matrices with real entries, let phi be a function phi: A -> det(A), then according to the property of matrices that |AB| == |A|B|, phi is  a group homomorphism
+        
+        semigroup: 
+            a semigroup generalizes a group by preserving only associativity and closure under the binary operation from the axioms defining a group while omitting the requirement for an identity element and inverses
+        
+        monoid: 
+            an algebraic structure intermediate between groups and semigroups, and is a semigroup having an identity element, thus obeying all but one of the axioms of a group
+            e.g., nonnegative integers under addition, positive integers under multiplication
+
+
+modular arithmetic: 
+    
+    modular multiplicative inverse: 
+        the modular multiplicative inverse of a modulo m is an integer x such that a * x ≡ 1 (mod m)
+        
+        when m is a prime, use fermat's little theorem: 
+            a ** (m - 1) ≡ 1 (mod m)
+        multiplying both sides by a ** (-1): 
+            a ** (-1) ≡ a ** (m - 2) (mod m)
+
+
+
+fast exponentiation: 
+    given an element a of a monoid G along with a nonnegative integer k, find the k-th exponentiation of a
+    definition of the k-th exponentiation of a: 
+        a ** k = { e             if k == 0
+                 { a · ... · a   if k >= 1
+                  (k a's)
+    monoid (Z+, *): 
+        trivially satifies closure
+        trivially satifies associativity
+        identity element is 1
+        case where k == 0: return 1
+        for cases where k > 0: 
+            any positive integer k can be decomposed into O(log(k)) binary bits
+            thus calculate a ** (2 ** 0), a ** (2 ** 1), a ** (2 ** 2), ...(recursively calculate the next term) and combine them using multiplication(since the associativity)
+        
+        pseudocode: 
+            fastPow(a, k):
+                // optional check for is base == 0
+                if(a == 0): 
+                    return 0 
+                ans = 1
+                while k > 0: 
+                    if k & 1: 
+                        ans *= a
+                    a *= a
+                    k >>= 1
+                return ans
+        
+        pseudocode with modulus: 
+            fastPow(a, k, mod):
+                // optional check for is base == 0
+                if(a == 0): 
+                    return 0 
+                ans = 1
+                while k > 0: 
+                    if k & 1: 
+                        ans *= a %= mod
+                    a *= a
+                    k >>= 1
+                return ans % mod
+        
+        pseudocode of extension onto square matrices: 
+            fastPow(a, k): 
+                // initialize ans as identity matrix
+                ans = I
+                while k > 0: 
+                    if k & 1: 
+                        ans *= a
+                    a *= a
+                    k >>= 1
+        
+        application of the fast matrice exponentiation: 
+            fibonacci sequence: f(n) = f(n - 1) + f(n - 2)
+            convert to matrix multiplication: 
+                [f(n), f(n - 1)] = [f(n - 1), f(n - 2)] * A
+                A = [1 1]
+                    [1 0]
+            thus fast exponentiation can reduce the time complexity from O(n) to O(log(n))
+    
+    monoid (Z, +): 
+        trivially satifies closure
+        trivially satifies associativity
+        identity element is 0
+        
+        pseudocode: 
+            fastMul(a, b): 
+                ans = 0
+                while b > 0: 
+                    if b & 1: 
+                        ans += a
+                    a <<= 1
+                    b >>= 1
+                return ans
+        
+        pseudocode with modulus: 
+            fastMul(a, b, mod): 
+                ans = 0
+                while b > 0: 
+                    if (b %= mod) & 1: 
+                        ans += a %= mod
+                    b >>= 1
+                    a <<= 1
+                return ans % mod
+
+
+
+fast fourier transform(fft): 
+    time complexity: O(N log N)
+    fft has a large coefficient in its time complexity
+
+    denote w(n, k) as the k-th power of the n-th complex root of 1: 
+        w(n, k) = exp(2 * k * pi * i / n)
+    
+    discrete fourier transform(dft): 
+        transform a sequence of N complex numbers {a_n} into {A_n} defined by: 
+            A_k = Σ(i = (0 -> N - 1))(a_n * exp(-2 * n * k * pi * i / N)) == Σ(i = (0 -> N - 1))(a_n * (cos(2 * n * k * pi / N) - i * sin(2 * n * k * pi / N)))
+        essentially, dft evaluates the polynomial p(x) = a_0 + a_1 * x + ... + a_(n - 1) * (x ** (n - 1)) at points w(n, 0), w(n, 1), ..., w(n, n - 1)
+    
+    from now on, assume N is a power of 2
+    if not, add in higher order terms with zero coefficients a_n = a_(n + 1) = ... = a_(2 ** ceil(lg(n)) - 1) = 0
+    the fft algorithm makes use of the following properties about w(n, k): 
+        w(n, n) == 1
+        w(n, k + n) == w(n, k)
+        w(n, n / 2) == -1
+        w(n, k + n / 2) == -w(n, k)
+    divide and conquer: split p(x) into two polynomials p_0(x) and p_1(x), both of degree n / 2 - 1 and each with coefficients of either odd or even order terms of p(x): 
+        p_0(x) = a_0 + a_2 * x + ... + a_(n - 2) * (x ** (n / 2 - 1))
+        p_1(x) = a_1 + a_3 * x + ... + a _ (n - 1) * (x ** (n / 2 - 1))
+        hence p(x) = p_0(x ** 2) + x * p_1(x ** 2)
+    thus the problem of evaluating p(x) at w(n, 0), w(n, 1), ..., w(n, n - 1) becomes: 
+        evaluating p_0(x) and p_1(x) at w(n, 0) ** 2, w(n, 1) ** 2, ..., w(n, n - 1) ** 2 and combining the results
+    note that the list w(n, 0) ** 2, w(n, 1) ** 2, ..., w(n, n - 1) ** 2 consists of only n / 2 powers of the complex root of unity, i.e. w(n, 0), w(n, 2), ..., w(n, n - 2)
+    thus the subproblems of evaluaing p_0(x) and p_1(x) have exactly the same form as the original problem of evaluating p(x)
+    
+    thus the pseudocode of the recursive approach of fft: 
+        recursive_dft(a): 
+            n = len(a)
+            if n == 1: 
+                return a
+            a_0 = recursive_fft({a[0], a[2], ..., a[n - 2]})
+            a_1 = recursive_fft({a[1], a[3], ..., a[n - 1]})
+            // n-th complex root of unity
+            w_n = exp(2 * pi * sqrt(-1) / n)
+            w = 1
+            for k = (0 -> n / 2 - 1): 
+                a[k] = a_0[k] + w * a_1[k]
+                a[k + n / 2] = a_0[k] - w * a_1[k]
+                // precompute the powers of the N-th root of unity to speed up
+                w *= w_n
+    
+    verification of correctness of the line a[k + n / 2] = a_0[k] - w * a_1[k]: 
+        at the k-th iteration of the for loop, w = w(n, k), thus
+        a[k + n / 2] = a_0[k] - w(n, k) * a_1[k]
+                     = a_0[k] + w(n, k + n / 2) * a_1[k]
+                     = p_0(w(n, 2 * k)) + w(n, k + n / 2) * p_1(w(n, 2 * k))
+                     = p_0(w(n, 2 * k + n)) + w(n, k + n / 2) * p_1(w(n, 2 * k + n))
+                     = p(w(n, k + n / 2))
+    
+    however, much memory is used to create and maintain the arrays in the recursive approach, thus use an iterative approach to reduce the memory usage
+    to use an iterative approach, order the array in the way it is divide up in the recursive approach
+    observe the process of dividing the array up in the recursive approach: 
+        e.g., N = 8
+        the orders of recursion are the following: 
+            (0, 1, 2, 3, 4, 5, 6, 7)
+            (0, 2, 4, 6), (1, 3, 5, 7)
+            (0, 4), (2, 6), (1, 5), (3, 7)
+        converting the indices into binary form, it is obvious that the order of recursion is the reverse of the original index: 
+            000, 001, 010, 011, 100, 101, 110, 111
+            000, 100, 010, 110, 001, 101, 011, 111
+        thus precompute the reversed binary numbers: 
+            // bit = lg(N)
+            precomputeRev(bit): 
+                for i = (0 -> (1 << bit) - 1): 
+                    // take i >> 1 which is i but ignoring the 1 bit and shifted 1 bit to the right
+                    // the reverse of i >> 1 would be the reverse of i without the 1 bit and shifted 1 bit to the left
+                    // thus shift the result 1 bit to the left and add the reversed 1 bit(1 << (bit - 1)) if the 1 bit is present in i
+                    rev[i] = (rev[i >> 1] >> 1) | ((i & 1) << (bit - 1))
+    
+    thus the pseudocode of the iterative approach of fft: 
+        fft(a): 
+            n = len(a)
+            for i = (0 -> n - 1): 
+                if i < rev[i]: 
+                    swap(a[i], a[rev[i])
+            for i = 1, i < n, i <<= 1: 
+                w_n = exp(pi * sqrt(-1) / i)
+                for j = 0, j < n, j += i << 1: 
+                    w_n_k = 1
+                    for k = (j -> i + j - 1): 
+                        x = a[k]
+                        y = w_n_k * a[k + i]
+                        a[k] = x + y
+                        a[k + i] = x - y
+                        w_n_k *= w_n
+    
+    inverse dft(idft): 
+        upon close inspection of dft, it can be interpreted as multiplying the coefficient vector a with a matrix as such: 
+            [y_0]         [   1       1               1                   ...     1                       ][a_0]
+            [y_1]         [   1       w(n, 1)         w(n, 2)             ...     w(n, n - 1)             ][a_1]
+            [y_3]       = [   1       w(n, 2)         w(n, 4)             ...     w(n, 2 * (n - 1))       ][a_2]
+            [...]         [   ...     ...             ...                 ...     ...                     ][a_3]
+            [y_(n - 1)]   [   1       w(n, n - 1)     w(n, 2 * (n - 1))   ...     w(n, (n - 1) * (n - 1)) ][a_4]
+        thus the inverse dft would be multiplying a vector by the inverse of this matrix
+        denote this matrix as V_n, it happens that inv(V_n)[i][j] == (V_n)[i][j] ** (-1) / n
+        to prove this, let x be the coefficient vector and X be the resultant vector of dft on x: 
+            according to the matrix-vector multiplication above: 
+                X[i] = Σ(j = (0 -> n - 1))(x[i] * w(n, i * j))
+            claim: 
+                x[i] == (1 / n) * Σ(j = (0 -> n - 1))(y[j] * w(n, -i * j))
+            let δ(m) = 1 if m == 0 else 0
+            x[i] = (1 / n) * Σ(j = (0 -> n - 1))(y[j] * w(n, -i * j))
+                 = (1 / n) * Σ(j = (0 -> n - 1))(Σ(k = (0 -> n - 1))(x[k] * w(n, j * k)) * w(n, -i * j))
+                 = (1 / n) * Σ(j = (0 -> n - 1))(x[j] * Σ(k = (0 -> n - 1))(w(n, k * (i - j))))
+                 = (1 / n) * Σ(j = (0 -> n - 1))(x[j] * n * δ(i - j))
+                 = x[i] 
+            also since δ(i - j) == 1 iff i == j: 
+                x[j] * δ(i - j) = x[i] if i == j else 0, 
+                thus the last step of the proof
+        
+    thus the pseudocode of the complete fft which includes idft: 
+        // dft = 1 for dft, -1 for idft
+        fft(a, dft): 
+            n = len(a)
+            for i = (0 -> n - 1): 
+                if i < rev[i]: 
+                    swap(a[i], a[rev[i])
+            for i = 1, i < n, i <<= 1:  
+                w_n = exp(dft * pi * sqrt(-1) / i)
+                for j = 0, j < n, j += i << 1: 
+                    w_n_k = 1
+                    for k = (j -> i + j - 1): 
+                        x = a[k]
+                        y = w_n_k * a[k + i]
+                        a[k] = x + y
+                        a[k + i] = x - y
+                        w_n_k *= w_n
+            if dft == -1: 
+                for i = (0 -> n - 1): 
+                    a[i] /= n
+    
+    number-theoretic transform(ntt): 
+        since fft has floating point calculations, when the size of the data is large, the error may lead to wrong answers
+        thus ntt specializes dft to the integers modulo a prime p
+        all of the following math are done in the finite field of integers modulo p
+        
+        definitions: 
+            phi(n): euler's totient function, the # of positive integers up to n that are relatively prime to n, i.e., the # of m ∋ 0 < m < n, gcd(m, n) == 1
+            multiplicative order: let n > 1, gcd(a, n) == 1,the first r > 0 that satifies a ** r ≡ 1(mod n) is the multiplicative order of a modulo n
+            primitive root of unity: let n be a positive integer and a be an integer, if the multiplicative order of a modulo n is phi(n), then a is a primitive root of unity modulo n
+        
+        if for g where 1 < g < p, (g ** i) mod p and (g ** j) mod p where i != j and 0 <= i, j < p are pairwise different, then g is a primitive root of unity modulo p
+        since g ** (p - 1) ≡ 1(mod p) and only when the exponent is p - 1(mod p)
+        proof: 
+            assume ∃k ∋ k > 0, k != p - 1, g ** k ≡ 1(mod p)
+            then according to the definition of a primitive root of unity, k == phi(p) while phi(p) == p - 1 since p is a prime
+            thus by proof of contradiction, g is a primitive root of unity modulo p if g ** k ≡ 1(mod p) iff k ≡ p - 1(mod p)
+        
+        to find the primitive root of unity modulo p efficiently: 
+            note that phi(p) == p - 1 since p is prime
+            for every g ∋ 1 < g < p, gcd(g, p) == 1(which in this case is every g that satifies 1 <= g < p since p is a prime): 
+                determine the distinct prime factors of phi(p) such that
+                phi(p)  == (p_1 ** a_1) * (p_2 ** a_2) * ... * (p_k ** a_k)
+                compute g ** (phi(p) / p_i) mod p ∀i = 1, 2, ..., k(use fast modular exponentation)
+                if g yields all k results different from 1, then g is a primitive root of unity
+                (if ∃i ∋ g ** (phi(p) / p_i) ≡ 1(mod p), then (phi(p) / p_i) would be the multiplicative order of g modulo p, and since phi(p) / p_i != phi(p), g would not be a primitive root of unity modulo p)
+                
+                proof of validity of this method: 
+                    claim: if g ** (phi(p) / p_i) !≡ 1(mod p) ∀i = 1, 2, ..., k where p_i is the i-th distinct prime factor of phi(p), then g is a primitive root of unity modulo p
+                    first g must satisfy that g ** phi(p) ≡ 1(mod p)
+                    this is true according to euler's theorem, which states that if n and a are coprime integers(i.e., gcd(n, a) == 1), then a ** phi(n) ≡ 1(mod p)
+                    in this case a is g and n is p, and g and p are coprime since p is a prime number
+                    to prove euler's theorem: 
+                        let R = {x_1, x_2, ..., x_phi(n)} be a reduced residue system(mod n)(*) and let a be any integer coprime to n
+                        by the fundamental fact that multiplication by a permutes x_i: 
+                            if a * x_j ≡ a * x_k(mod n) then j == k
+                            since integers in the same congruence class s ≡ t (mod n) satisfy gcd(s, n) == gcd(t, n)
+                            proof: 
+                                s ≡ t (mod n) => s == k * n + t
+                                gcd(s, n) == gcd(k * n + t, n) == gcd(t, n)
+                                (similar to the euclidean algorithm)
+                        i.e., the sets R and a * R = {a * x_1, a * x_2, ..., a * x_phi(n)}, considered as sets of congruence classes(mod n), are identical
+                        thus the products of all the numbers in R is congruent(mod n) to the product of all the numbers in a * R: 
+                            Π(i = (1 -> phi(n)))(x_i) ≡ Π(i = (1 -> phi(n)))(a * x_i) == (a ** phi(n)) * Π(i = (1 -> phi(n)))(x_i)(mod n)
+                            thus a ** phi(n) ≡ 1(mod n)
+                        *any subset R of the integers is called a reduced residue system modulo n if: 
+                            gcd(r, n) == 1 ∀r ∈ R
+                            R contains phi(n) elements
+                            no 2 elements of R are congruent modulo n
+                    
+                    also, only exponents of phi(p) / p_i ∀p_i are checked since the multiplicative order of g modulo p must be a divisor or phi(p)
+        
+        for a prime p = q * n + 1(for convenience, take n = 2 ** m) of which one of the primitive root is g, g ** (p - 1) ≡ 1(mod p)
+        in ntt, g(n, k) = g ** (k * (p - 1) / n)(mod p) can be seen as equivalent to w(n, k) in fft and satifies the properties of the root of unity: 
+            g(n, n) ≡ 1(mod p)
+            g(n, n / 2) ≡ -1(mod p)
+        here n may be greater than N, just take q = q * N / n
+        commonly used p's: 
+            p = 1004535809 == 479 * (2 ** 21) + 1, g = 3
+            p = 998244353 == 7 * 17 * (2 ** 23) + 1, g = 3
+        thus the formula for ntt: 
+            X_k = Σ(n = (0 -> N - 1))(x_n * (g ** (n * k)))(mod p), k = 0, 1, 2, ..., N - 1
+            x_n = (1 / N)Σ(k = (0 -> N - 1))(X_k * (g ** (-n * k)))(mod p), n = 0, 1, 2, ..., N - 1
+    
+    usages: 
+        
+        polynomial multiplication: 
+            given polynomials p(x) and q(x), find (p * q)(x)
+            combine fft and interpolation
+            let N be the max order of p(x) and q(x), 
+                n = 2 ** ceil(lg(N)), 
+                p(x) = a_0 + a_1 * x + ... + a_(n - 1) * (x ** (n - 1)), 
+                q(x) = b_0 + b_1 * x + ... + b_(n - 1) * (x ** (n - 1))
+            then (p * q)(x) = c_0 + c_1 * x + ... + c_(2 * n - 2) * (x ** (2 * n - 2))
+            this process is also analogous to multiplication between two numbers and can be used to optimize the multiplication between big nums(carrying digits may need extra care)
+            
+            outline: 
+                evaluate p(x) and q(x) at 2n points w(2n, 0), w(2n, 1), ..., w(2n, 2n - 1) using fft
+                obtain the values of (p * q)(x) at these 2n points (p * q)(x) == p(x) * q(x)
+                interpolate the polynomial p * q at the product values using idft to obtain coefficients c_0, c_1, ..., c_(2 * n - 2)
+
+
+
 network flow: 
     given a connected integer weighted directed graph along with a source node and a sink node
     let c(u, v) be the weight of arc (u, v), which is the capacity and let f(u, v) be the flow of arc (u, v)
     a flow through the graph is constructed by assigning integer amount of flow through each edge such that: 
         f(u, v) <= c(u, v)
         sum(f(u, x)) == sum(f(x, v)) where (u, x) are in-arcs of x and (x, v) are out-arcs of x
-    maximize the total weight of the out-arcs of the source - the total weight of the in-arcs of the source: 
+    
+    ford-fulkerson method: 
+        repeatedly find augmenting paths until no more can be found
+        pseudocode: 
+            totalFlow = 0
+            while true: 
+                if no augmenting path: 
+                    break
+                min = inf
+                i = sink
+                while i != src: 
+                    if min > capacity(parent[i], i): 
+                        min = capacity(parent[i], i)
+                    i = parent[i]
+                totalFlow += min
+    
+    edmonds-karp implementation uses bfs to search for augmenting paths, pseudocode: 
+        offer src -> Q
+        visited[src] = true
+        bfs: while !Q.empty(): 
+            poll Q -> v
+            for all nodes i: 
+                if !visited[i] && capacity(v, i) > 0: 
+                    poll i -> Q
+                    visited[i] = true
+                    parent[i] = v
+                    if i == sink: 
+                        break bfs, augmenting path found
+        augmenting path not found
+    
+    dinic's implementation constructs level graphs from the residual network: 
+        create the level graph from the residual network by assigning levels to all nodes using bfs
+            (the level of a node is the minimum # of edges to reach the node from the source)
+        if no more flow is possible, maximum flow is reached
+        send flows using the level graph(only use edges (u, v) such that level(v) == level(u) + 1) until the blocking flow is reached
+            (a flow is a blocking flow if no more s-t path exists such that the path nodes have current levels 0, 1, 2, ... in order)
+        reconstruct the level graph from the current residual network and repeat the process
+    
+    implementation of the ford-fulkerson method using a modified dijkstra's algorithm to search for augmenting paths: 
+        maximize the total weight of the out-arcs of the source - the total weight of the in-arcs of the source
         start every arc having weight equal to the capacity(beginning weight)
         the weight correspond to the amount of capacity still unused in that arc
         given the current graph, find path from source to sink arcs that all have non-zero weight
         let pathCap = maximum flow across the path(== min(c(u, v) Ɐ (u, v) along the path))
         reduce the weight of each arc along the path by pathCap and add pathCap to the weight of the reverse arc of each arc along the path
-        pseudocode(algorithm from USACO Training, O(FM) where F = maximum flow, M = # of arcs): 
+        pseudocode(algorithm from USACO Training, time complexity: O(FM) where F = maximum flow, M = # of arcs): 
             // the algorithm is essentially constructing the residual network(leftover capacity for both directions between vertices) and searching for augmenting paths
             // the termination of the algorithm is guaranteed for integer weights since the flow is increased every iteration
             if src == sink: 
@@ -428,48 +2897,197 @@ network flow:
                     capacity(nextNode, curNode) -= pathCapacity
                     capacity(curNode, nextNode) += pathCapacity
                     curNode = nextNode
+    
+    extensions to the maximum flow problem: 
+        
         undirected graphs: 
             expand the edge as 2 arcs in opposite directions
+        
         limit amount of traffic through any node: 
             split node into 2, an in-node and an out-node
             put in-arcs into in-node and out-arcs into out-node
             place arc from in-node to out-node with capacity of the node
+        
         multiple arcs that are between the same nodes: 
             add up the weights of the arcs in 1 arc and discard all others
+        
         multiple sources and sinks: 
             create virtual source and virtual sink
             place arcs from virtual source to each source
             place arcs from each sink to virtual sink
             make each added arcs have infinite capacity
+        
         real-valued weights: 
             the algorithm above no longer guarantees termination, but will asymptotically approach the maximum
-        alternate problems: 
-            maximum matching: 
-                given 2 sets of objects A and B, match as many individual A objects with individual B objects as possible
-                subject to the constraint that only certain pairs are possible
-                create source and add arc with capacity 1 from source to each A object
-                create sink with arc from each B object to it with capacity 1
-                if object Ai and Bj are allowed to be matched together, add arc from Ai to Bj with capacity 1
-                run algorithm and determine arcs used between A objects and B objects
-            minimum cut: 
-                given a weighted undirected graph, find the set of edges with minimum total weight such that it separates two given nodes
-                minimum total weight is the flow between the two nodes
-                to determine the path, try removing each edge in increasing weight order, and seeing if it reduces the network flow
-                if removing the edge does reduce the network flow, it should reduce the flow by the capacity of the edge
-                the first edge that reduces the flow is a member of the minimum cut, iterate on the graph without that edge
-        the minimum cut is also the set of arcs that are in the original network but go from a node reachable from the source to one that is unreachable in the residual network
-                max-flow min-cut theorem: 
-                    in a flow network, the maximum amount of flow passing from the source to the sink is equal to the total weight of the edges in the minimum cut
-                    proof: 
-                        flow <= cut since cut is the capacity and flow <= capacity
-                        constructing a flow is constructing a cut: 
-                            when maximum flow is reached, there would not be an augmenting path from s(source) to t(sink) since otherwise the flow can be further augmented
-                            let set S be the set of vertices that can be reached from s, set T be the set of other vertices
-                            the arcs from S to T must be full, otherwise the flow can be augmented
-                        max-flow == min-cut because any 1 flow <= any 1 cut: 
-                            any F <= Fmax <= Cmin <= any C
+    
+    alternate problems: 
+        
+        maximum matching: 
+            given 2 sets of objects A and B, match as many individual A objects with individual B objects as possible
+            subject to the constraint that only certain pairs are possible
+            create source and add arc with capacity 1 from source to each A object
+            create sink with arc from each B object to it with capacity 1
+            if object Ai and Bj are allowed to be matched together, add arc from Ai to Bj with capacity 1
+            run algorithm and determine arcs used between A objects and B objects
+        
+        minimum cut: 
+            given a weighted undirected graph, find the set of edges with minimum total weight such that it separates two given nodes
+            minimum total weight is the flow between the two nodes
+            to determine the path, try removing each edge in increasing weight order, and seeing if it reduces the network flow
+            if removing the edge does reduce the network flow, it should reduce the flow by the capacity of the edge
+            the first edge that reduces the flow is a member of the minimum cut, iterate on the graph without that edge
+            the minimum cut is also the set of arcs that are in the original network but go from a node reachable from the source to one that is unreachable in the residual network
+            
+            max-flow min-cut theorem: 
+                in a flow network, the maximum amount of flow passing from the source to the sink is equal to the total weight of the edges in the minimum cut
+                
+                proof: 
+                    flow <= cut since cut is the capacity and flow <= capacity
+                    constructing a flow is constructing a cut: 
+                        when maximum flow is reached, there would not be an augmenting path from s(source) to t(sink) since otherwise the flow can be further augmented
+                        let set S be the set of vertices that can be reached from s, set T be the set of other vertices
+                        the arcs from S to T must be full, otherwise the flow can be augmented
+                    max-flow == min-cut because any 1 flow <= any 1 cut: 
+                        any F <= Fmax <= Cmin <= any C
+        
+        minimum cost maximum flow: 
+             search for augmenting paths by simultaneously searching for the shortest path from the source to the sink with distance as cost   
+
+
+
+bipartite matching: 
+    definitions(general graph theory): 
+        matching: a set of edges in a graph that do not have a set of common vertices
+        maximal matching: a matching with the property that if any edge not in the matching is added to the matching, it is no longer a matching
+        maximum matching: a matching that contains the largest possible # of edges
+        perfect matching: a matching which matches all nodes in the graph
+        alternating path: a path that begins with an unmatched node and whose edges belong alternatively to the matching and not to the matching
+        augmenting path: an alternating path that begins and ends on unmatched nodes
+    
+    maximum matching: 
+        
+        hungarian method: 
+            
+            time / space complexity: 
+                
+                adj matrix: O(V ** 3) / O(V ** 2)
+                adj list:   O(V * E)  / O(V + E)
+            
+            definition of augmenting path: 
+                let M be a matching on the bipartite graph G which consists of two sets of nodes V1 and V2, both of which no two nodes are connected
+                if P is an alternating path on G that connects an unmatched node in V1 and an unmatched node in V2, 
+                then P is an augmenting path with respect to M
+                thus: 
+                    the # of edges on P must be odd, the first and the last of which are not elements of M
+                    adding the negative of P onto M yields a greater matching M'
+                    M is the maximum matching of G iff there are no augmenting paths with respect to M
+            
+            pseudocode(adj matrix): 
+                cnt = 0
+                for i = (0 -> size(V1) - 1): 
+                    fill(visited, false)
+                    if find(i): 
+                        cnt++
+                
+                find(i): 
+                    for j = (0 -> size(V2) - 1): 
+                        if adj[i][j] && !visited[j]: 
+                            visited[j] = true
+                            // if j is not in M || j is in M but an augmenting path can be found from an adjacent node to j
+                            if result[j] == null || find(result[j]): 
+                                result[j] = i
+                                return true
+                    return false
+            
+            pseudocode(adj list): 
+                cnt = 0
+                for i = (0 -> size(V1 - 1)): 
+                    fill(visited, false)
+                    if find(i): 
+                        cnt++
+                
+                find(i): 
+                    for all nodes j in adj[i]: 
+                        if !visited[j]: 
+                            visited[j] = true
+                            // if j is not in M || j is in M but an augmenting path can be found from an adjacent node to j
+                            if result[j] == null || find(result[j]): 
+                                result[j] = i
+                                return true
+                    return false
+            
+            optimization: select the smaller set of nodes as V1
+    
+    maximum weight bipartite matching: 
+        note that a maximum weight matching is not necessarily a maximum matching
+        however, adding edges of weight 0 can unify the maximum weight matching and the maximum matching
+    
+        kuhn-munkres(km) algorithm: 
+            time complexity: O(N ** 3)
+            
+            outline: 
+                select the smaller set of nodes as V1, initially label each node i in V1 to have a potential of max(weight[i][j]) and each node j in V2 to have a potential of 0
+                find an augmenting path beginning from each node in V1 in the subgraph of tight edges(*)
+                if an augmenting path cannot be found, make changes to the potentials(**) to enlarge the subgraph and continue searching for augmenting paths
+                when an augmenting path is found for every node in V1, a maximum matching which is also the maximum weight matching is found
+                *tight edge: an edge (i, j) that suffices potential[i] + potential[j] == weight[i][j]
+                **making changes to the potentials: 
+                    if an augmenting path is not found, the paths searched must form one or more alternating paths that end on a node in V1
+                    let the sum of these paths be called an alternating tree
+                    subtract a value d from all nodes on the alternating tree that are in V1, and add d to all nodes on the alternating tree that are in V2
+                    thus: 
+                        ∀ edge (i, j) ∋ i ∈ V1, j ∈ V2, i, j ∈ alternating tree, potential[i] + potential[j] does not change: this edge was and now is in the subgraph of tight edges
+                        ∀ edge (i, j) ∋ i ∈ V1, j ∈ V2, i, j !∈ alternating tree, potential[i] + potential[j] does not change: this edge was not and now is not in the subgraph of tight edges
+                        ∀ edge (i, j) ∋ i ∈ V1, j ∈ V2, i !∈ alternating tree, j ∈ alternating tree, potential[i] + potential[j] becomes greater: this edge was not and now is not in the subgraph of tight edges
+                        ∀ edge (i, j) ∋ i ∈ V1, j ∈ V2, i ∈ alternating tree, j !∈ alternating tree, potential[i] + potential[j] becomes less: this edge was not but now may or may not be in the subgraph of tight edges
+                        the subgraph is potentially enlarged
+                    d = min({potential[i] + potential[j] - weight[i][j] | i ∈ V1, j ∈ V2, i ∈ alternating tree, j !∈ alternating tree}) such that at least one edge will be added to the subgraph of tight edges
+                    however, an simple implementation of this has a time complexity of O(N ** 4): 
+                        O(N) searches for augmenting path, each of which has a O(N) time
+                        O(N ** 2) time to enumerate edges and find the value of d
+                    this can be reduced to O(N ** 3) by recording a slack value while finding the augmenting path: 
+                        if an edge (i, j) is not tight(since this edge is being checked, i must be in the alternating tree and since it is not tight, j will not be in the alternating tree), set slack to min(slack, potential[i] + potential[j] - weight[i][j])
+            
+            pseudocode: 
+                if size(V1) > size(V2): 
+                    swap(V1, V2)
+                fill(linkV2, -1)
+                for i = (0 -> size(V1) - 1): 
+                    for j = (0 -> size(V2) - 1): 
+                        potentialV1[i] = max(potentialV1[i], weight[i][j])
+                for i = (0, size(V1) - 1): 
+                    for once: 
+                        fill(visitedV1, false)
+                        fill(visitedV2, false)
+                        slack = inf
+                        if find(i): 
+                            break
+                        for j = (0 -> size(V1) - 1): 
+                            if visitedV1[j]: 
+                                potentialV1[j] -= slack
+                        for j = (0 -> size(V2) - 1): 
+                            if visitedV2[j]: 
+                                potentialV2[j] -= slack
+                
+                find(i): 
+                    visitedV1[i] = true
+                    for j = (0, size(V2) - 1): 
+                        if visitedV2[j]: 
+                            continue
+                        t = potentialV1[i] + potentialV2[j] - weight[i][j]
+                        if t == 0: 
+                            visitedV2[j] = true
+                            if linkV2[j] == null || find(linkV2[j]): 
+                                linkV2[j] = i
+                                return true
+                        else: 
+                            slack = min(slack, t)
+                    return false
+
+
 
 big nums: 
+    
     structure: 
         list of numbers + sign
         upper bound known: array
@@ -478,9 +3096,12 @@ big nums:
         value = ((-1) ** sign) * (a0 + a1(b ** 1) + a2(b ** 2) + ... + an(b ** n))
         note that a0, a1, ..., an have to be within [0, b - 1]
         b is generally selected to be a power of 10 for easy display of the number
+    
     operations: 
         make sure that every addition and multiplication will not result in an overflow
+        
         comparison: 
+            
             pseudocode: 
                 // sgn(A) == 0 => positive
                 // sgn(A) == 1 => negative
@@ -502,9 +3123,11 @@ big nums:
                             else: 
                                 return "A > B"
                     return "A == B"
+        
         addition: 
             if numbers have opposite signs, calculate which is larger in absolute value, subtract the smaller from the larger, and set the sign to be the same as the larger number
             otherwise, add numbers from 0 to max(A.size, B.size) while maintaining a carry bit
+            
             pseudocode: 
                 absoluteSubtract(A, B, C): 
                     borrow = 0
@@ -545,9 +3168,12 @@ big nums:
                         else: 
                             absoluteSubtract(A, B, C)
                             sgn(C) = sgn(B)
+        
         subtraction: 
             A - B = A + (-B)
+        
         multiplication by scalar: 
+            
             pseudocode: 
                 if s < 0: 
                     sgn(B) = 1 - sgn(A)
@@ -566,8 +3192,10 @@ big nums:
                     carry /= base
                     pos++
                 B.size = pos - 1
+        
         multiplication of 2 bignums: 
             multiply one of the numbers by each digit of the other, and add it with appropriate offset to a running total
+            
             pseudocode: 
                 multiplyAndAdd(A, s, offset, C): 
                     carry = 0
@@ -615,8 +3243,11 @@ big nums:
                                 if C[pos] > 0 && pos > C.size: 
                                     C.size = pos
 
+
+
 2d convex hull: 
     given a collection of points in the plane, find the convex polygon with smallest area such that each point is contained within(or on the boundary of) the polygon
+    
     USACO "gift wrapping" algorithm: 
         find a point whil will be within the convex hull, set it as the origin
         calculate the angle that each point makes with the x-axis
@@ -669,20 +3300,26 @@ big nums:
             hull[hullPos++] = p
         this algorithm does not work with any limitations on the polygon created(e.g. no more than n points / must be a rectangle)
 
+
+
 heuristic search: 
     estimate the "goodness" of all states to improve the search for a solution
     a heuristic function is evaluated in terms of how well it estimates the cost of a state
+    
     admissibility: 
         a heuristic function is called admissible if it underestimates the cost of a state and is nonnegative for all states
+    
     heuristic pruning: 
         easiest and most common use for heuristic functions
         assume problem is to find solution with min cost: 
-            with addmissible heuristic function, if cost of current solution thus far == A, and heurisic function returns B, then best possible solution which is a child of the current solution is A + B
+            with admissible heuristic function, if cost of current solution thus far == A, and heuristic function returns B, then best possible solution which is a child of the current solution is A + B
             if a solution has been found with cost C where C < A + B, stop continuing to search for a solution from this state
         especially helpful with dfs+id
+    
     best-first search: 
         ~greedy dfs
         instead of expanding the children in an arbitrary order, expand them in order of their heuristic evaluation
+    
     a*: 
         akin to the greedy bfs
         bfs expands the node with min cost, while a* expands the node that the cost of reaching that state + the heuristic value of the state is minimum
